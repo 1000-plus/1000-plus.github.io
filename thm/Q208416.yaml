@@ -9,4 +9,5 @@ lean:
   - status: formalized
     library: X
     url: https://github.com/flypitch/flypitch
+    authors: Floris van Doorn and Jesse Michael Han
 
