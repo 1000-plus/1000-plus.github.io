@@ -3,7 +3,7 @@
 wikidata: Q208416
 msc_classification: 03
 wikipedia_links:
-  - [[Continuum hypothesis#Independence from ZFC|Independence of the continuum hypothesis]]
+  - "[[Continuum hypothesis#Independence from ZFC|Independence of the continuum hypothesis]]"
 
 lean:
   - status: formalized
