@@ -1,0 +1,12 @@
+# Independence of the continuum hypothesis
+
+wikidata: Q208416
+msc_classification: 03
+wikipedia_links:
+  - [[Continuum hypothesis#Independence from ZFC|Independence of the continuum hypothesis]]
+
+lean:
+  - status: formalized
+    library: X
+    url: https://github.com/flypitch/flypitch
+
