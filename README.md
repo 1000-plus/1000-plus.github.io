@@ -10,7 +10,10 @@ We do not accept entries that are not part of that list.
 
 We welcome contributions! Please open a PR with additions or corrections!
 
-## Yaml format
+## File format
+
+The files should start and end with a row containing exactly `---` and should contain Yaml records with the fields described below. 
+For an example of a file with a formalization entry, see [Q208416.md](_thm/Q208416.md).
 
 * `wikidata`: Wikidata identifier for this theorem (or concept related to the theorem). This is usually the Wikipedia page containing the theorem.
 * `id_suffix` (optional): disambiguates an entry when two theorems have the same wikidata identifier. `x` means an extra theorem on a Wikipedia page (e.g. a generalization or special case), `a`/`b`/... means different theorems on one Wikipedia page that doesn't have a "main" theorem.

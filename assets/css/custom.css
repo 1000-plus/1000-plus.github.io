@@ -1,0 +1,29 @@
+#main {
+    margin-top: 20px;
+}
+
+a {    
+    border-bottom: 1px dotted;
+    text-decoration: none;
+}
+a:hover {    
+    border-bottom: 1px solid;
+    text-decoration: none;
+}
+.page__content a:not(.btn):hover { text-decoration: none; }
+
+.smallcaps {
+    font-variant: small-caps;
+}
+
+.dt-length, .dt-search, .dt-info, .dt-paging {
+    font-size: 0.75em;
+}
+.dt-length {
+    select { margin-right: 10px; }
+    label { display: inline-flex !important; }
+}
+.dt-search {
+    label, input { display: inline-flex !important; }
+    input { width: auto; }
+}
