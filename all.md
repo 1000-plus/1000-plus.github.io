@@ -10,7 +10,7 @@ layout: plain
 <table class="display datatable" data-order-columns="[1]">
     <thead>
         <tr>
-            <th>MSC</th>
+            <th class="dt-head-center">MSC</th>
             <th>Name</th>
             <th class="dt-head-center">Isabelle</th>
             <th class="dt-head-center">HOL Light</th>
@@ -24,7 +24,7 @@ layout: plain
         {% assign sorted = site.thm | sort: "wikidata" %}
         {% for t in sorted %}
             <tr>
-                <td><span title="{{ site.data.msc[t.msc_classification] }}">{{ t.msc_classification }}</span></td>
+                <td class="dt-body-center"><span title="{{ site.data.msc[t.msc_classification] }}">{{ t.msc_classification }}</span></td>
                 <td>
                     {% assign wl = t.wikipedia_links.first %}
                     {% if wl contains "|" %}
