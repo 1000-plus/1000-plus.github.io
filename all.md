@@ -5,7 +5,7 @@
 layout: plain
 ---
 
-# Theorems with at least one formalization
+# All theorems
 
 <table class="display datatable" data-order-columns="[1]">
     <thead>
@@ -23,7 +23,6 @@ layout: plain
     <tbody>
         {% assign sorted = site.thm | sort: "wikidata" %}
         {% for t in sorted %}
-            {% if t.isabelle or t.hol_light or t.coq or t.lean or t.metamath or t.mizar %}
             <tr>
                 <td><span title="{{ site.data.msc[t.msc_classification] }}">{{ t.msc_classification }}</span></td>
                 <td>
@@ -48,7 +47,6 @@ layout: plain
                 <td></td>
                 <td></td>
             </tr>
-            {% endif %}
         {% endfor %}
     </tbody>
 </table>
