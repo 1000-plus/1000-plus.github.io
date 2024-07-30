@@ -5,19 +5,19 @@
 layout: plain
 ---
 
-# Theorems with at least one formalization
+# Formalized theorems
 
 <table class="display datatable" data-order-columns="[1]">
     <thead>
         <tr>
             <th>MSC</th>
             <th>Name</th>
-            <th>Isabelle</th>
-            <th>HOL Light</th>
-            <th>Coq</th>
-            <th>Lean</th>
-            <th>Metamath</th>
-            <th>Mizar</th>
+            <th class="dt-head-center">Isabelle</th>
+            <th class="dt-head-center">HOL Light</th>
+            <th class="dt-head-center">Coq</th>
+            <th class="dt-head-center">Lean</th>
+            <th class="dt-head-center">Metamath</th>
+            <th class="dt-head-center">Mizar</th>
         </tr>
     </thead>
     <tbody>
@@ -35,18 +35,18 @@ layout: plain
                         {{ wl | remove: '[[' | remove: ']]' }}
                     {% endif %}
                 </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
+                <td class="dt-body-center"></td>
+                <td class="dt-body-center"></td>
+                <td class="dt-body-center"></td>
+                <td class="dt-body-center">
                     {% if t.lean %}
                         {% for f in t.lean %}
-                            <a href="{{ f.url }}">{{ f.library }}</a>
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
                         {% endfor %}
                     {% endif %}
                 </td>
-                <td></td>
-                <td></td>
+                <td class="dt-body-center"></td>
+                <td class="dt-body-center"></td>
             </tr>
             {% endif %}
         {% endfor %}
