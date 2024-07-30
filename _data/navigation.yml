@@ -1,5 +1,5 @@
 main:
   - title: "About"
-    url: /about/
+    url: /about
   - title: "All theorems"
-    url: /all/
+    url: /all
