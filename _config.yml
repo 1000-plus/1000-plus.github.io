@@ -30,6 +30,8 @@ plugins:
   - jemoji
   - jekyll-include-cache
 
+atom_feed:
+  hide: true
 
 footer:
   links:
