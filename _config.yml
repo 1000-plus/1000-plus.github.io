@@ -5,8 +5,8 @@ title: 1000+ theorems
 email: your-email@example.com
 description: >- # this means to ignore newlines until "baseurl:"
   Keeping track of formalizations of theorems from the Wikipedia's List of theorems.
-baseurl: "/1000-demo" # the subpath of your site, e.g. /blog
-url: "https://katjabercic.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://1000-plus.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 minimal_mistakes_skin: default
 search: false
 
