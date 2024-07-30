@@ -26,7 +26,7 @@ For each proof assistant we record the following information
 * `status`: `formalized`, `statement`
 * `library`: in what library does the formalization appear
   - S standard library
-  - M main (biggest) mathematical library (afp, hol light outside standard library, mathcomp, mathlib, mml, set.mm)
+  - L main (biggest) mathematical library (afp, hol light outside standard library, mathcomp, mathlib, mml, set.mm)
   - X external to main or standard library (e.g. a dedicated repository)
 * `url`: a URL pointing to the formalization (or a list collecting a list of theorems for a particular proof assistant).
 * `authors`:  (optional)
