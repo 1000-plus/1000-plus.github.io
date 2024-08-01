@@ -29,10 +29,13 @@ layout: plain
                     {% assign wl = t.wikipedia_links.first %}
                     {% if wl contains "|" %}
                         {% assign wl_parts = wl | split: '|' %}
-                        {{ wl_parts[1] | remove: ']]' }}
+                        {% assign wlabel = wl_parts[1] | remove: ']]' %}
+                        {% assign wurl = wl_parts[0] | remove: '[[' %}
                     {% else %}
-                        {{ wl | remove: '[[' | remove: ']]' }}
+                        {% assign wlabel = wl | remove: '[[' | remove: ']]' %}
+                        {% assign wurl = wlabel %}
                     {% endif %}
+                    <a href="https://en.wikipedia.org/wiki/{{ wurl }}">{{ wlabel }}</a>
                 </td>
                 <td class="dt-body-center"></td>
                 <td class="dt-body-center"></td>
