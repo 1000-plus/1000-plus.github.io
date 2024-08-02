@@ -9,17 +9,26 @@
 
 <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/custom.css">
 
-<!-- DataTables stuff -->
+<!-- DataTables -->
 <link rel="stylesheet" href="//cdn.datatables.net/2.1.2/css/dataTables.dataTables.min.css">
-
 <script src="//cdn.datatables.net/2.1.2/js/dataTables.min.js"></script>
+<!-- DataTables Buttons -->
+<link rel="stylesheet" href="//cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.min.css">
+<script src="//cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.min.js"></script>
+
 
 <script>
     $(document).ready(function () {
+        let toolbar = document.createElement('div');
+        toolbar.innerHTML = '<b>Custom tool bar! Text/images etc.</b>';
         let tables = $('table.datatable');
         for (t of tables) {
             dt = new DataTable(t, {
-                "order": $(t).data('order-columns').map(n => [n, 'asc'])
+                "order": $(t).data('order-columns').map(n => [n, 'asc']),
+                lengthMenu: [
+                    [100, 500, -1],
+                    [100, 500, 'All']
+                ],
             });
             dt.columns().every(function () {
                 if ($(this.header()).data('hide-column')) {
