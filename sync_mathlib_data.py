@@ -71,8 +71,9 @@ class FormalizationEntryRaw:
     status: str
     library: str
     url: str
-    authors: Optional[List[str]]
-    date: Optional[datetime]
+    authors: Optional[List[str]] = None
+    date: Optional[datetime] = None
+    comment: Optional[str] = None
 
 
 class FormalisationEntry(NamedTuple):
@@ -80,7 +81,7 @@ class FormalisationEntry(NamedTuple):
     library: Library
     # A URL pointing to the formalization
     url: str
-    authors: Optional[str]
+    authors: Optional[List[str]]
     # Format `YYYY-MM-DD`, `YYYY-MM` or `YYYY` in the source file.
     date: Optional[datetime]
     comment: Optional[str]
@@ -169,12 +170,12 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
     formalisations = {}
     for (pa, raw) in passthrough.items():
         if raw:
-            entries = [parse_formalization_entry(entry) for entry in raw]
+            entries: List[FormalisationEntry] = [parse_formalization_entry(entry) for entry in raw]
             if None in entries:
                 return None
             formalisations[pa] = entries
         else:
-            formalisations[pa] = None
+            formalisations[pa] = []
     res = TheoremEntry(
         raw_thm.wikidata, raw_thm.id_suffix, raw_thm.msc_classification, raw_thm.wikipedia_links,
         formalisations
