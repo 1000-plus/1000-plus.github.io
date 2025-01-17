@@ -17,7 +17,7 @@ so should evolve with any changes there.
 
 import os
 from enum import Enum, auto
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional
 from datetime import datetime
 import yaml
 
@@ -54,14 +54,10 @@ class FormalisationEntry(NamedTuple):
     library: Library
     # A URL pointing to the formalization
     url: str
-    # A list of theorems for a particular proof assistant: can we make this required instead?
-    # Perhaps make the URL optional for 'S' or 'M' formalisations? Need to discuss!
-    # Actually, I think requiring it is a better decision.
-    identifiers: str
-    authors: str | None
-    # Format YYYY-MM-DD in the source file.
-    date: datetime | None
-    comment: str | None
+    authors: Optional[str]
+    # Format `YYYY-MM-DD`, `YYYY-MM` or `YYYY` in the source file.
+    date: Optional[datetime]
+    comment: Optional[str]
 
 
 # Information about a theorem entry: taken from the specification at
@@ -73,13 +69,13 @@ class TheoremEntry(NamedTuple):
     # disambiguates an entry when two theorems have the same wikidata identifier.
     # X means an extra theorem on a Wikipedia page (e.g. a generalization or special case),
     # A/B/... means different theorems on one Wikipedia page that doesn't have a "main" theorem.
-    id_suffix: str | None
+    id_suffix: Optional[str]
     # Our best guess of the MSC-classification. (Should be a two-digit string; not validated.)
     msc_classification: str
     # The exact link to a wikipedia page: format [[Page name]] or [[Wiki-link|Displayed name]].
     wikipedia_links: List[str]
     # Entries about formalizations in any of the supported proof assistants.
-    # Several formalization entries for assistant are allowed.
+    # Several formalization entries for one assistant are allowed.
     formalisations: dict[ProofAssistant, List[FormalisationEntry]]
 
 
