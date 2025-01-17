@@ -16,6 +16,7 @@ so should evolve with any changes there.
 
 
 import os
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List, NamedTuple, Optional
 from datetime import datetime
@@ -64,6 +65,16 @@ class Library(Enum):
         }[input]
 
 
+# "Raw" version of a formalisation entry: not typed yet.
+@dataclass
+class FormalizationEntryRaw:
+    status: str
+    library: str
+    url: str
+    authors: Optional[List[str]]
+    date: Optional[datetime]
+
+
 class FormalisationEntry(NamedTuple):
     status: FormalizationStatus
     library: Library
@@ -73,6 +84,31 @@ class FormalisationEntry(NamedTuple):
     # Format `YYYY-MM-DD`, `YYYY-MM` or `YYYY` in the source file.
     date: Optional[datetime]
     comment: Optional[str]
+
+
+# Parse a typed version of a formalisation entry from its raw version.
+# XXX: this assumes all entries are well-typed, for now
+def parse_formalization_entry(entry: FormalizationEntryRaw) -> FormalisationEntry:
+    return FormalisationEntry(
+        FormalizationStatus.from_str(entry.status),
+        Library.from_str(entry.library),
+        entry.url, entry.authors, entry.date, entry.comment
+    )
+
+
+# "Raw" version of a theorem entry: not typed yet.
+@dataclass
+class TheoremEntryRaw:
+    wikidata: str
+    msc_classification: str
+    wikipedia_links: List[str]
+    id_suffix: Optional[str] = None
+    isabelle: Optional[List[FormalizationEntryRaw]] = None
+    hol_light: Optional[List[FormalizationEntryRaw]] = None
+    coq: Optional[List[FormalizationEntryRaw]] = None
+    lean: Optional[List[FormalizationEntryRaw]] = None
+    metamath: Optional[List[FormalizationEntryRaw]] = None
+    mizar: Optional[List[FormalizationEntryRaw]] = None
 
 
 # Information about a theorem entry: taken from the specification at
@@ -92,14 +128,6 @@ class TheoremEntry(NamedTuple):
     # Entries about formalizations in any of the supported proof assistants.
     # Several formalization entries for one assistant are allowed.
     formalisations: dict[ProofAssistant, List[FormalisationEntry]]
-
-
-def _parse_formalization_entry(entry: dict) -> FormalisationEntry:
-    return FormalisationEntry(
-        FormalizationStatus.from_str(entry["status"]),
-        Library.from_str(entry["library"]),
-        entry["url"], entry.get("authors"), entry.get("date"), entry.get("comment")
-    )
 
 
 # Check if a string is a valid wikidata identifier of the kind we want,
@@ -125,28 +153,31 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
     # For optics, we check that all entry files start with the theorem name as comment.
     # We parse the actual title from the wikipedia data below: this yields virtually the same results.
     assert contents[1].startswith("# ") or contents[1].startswith("## ")
-    data = yaml.safe_load("".join(contents[1:-1]))
-    if not is_valid_wikidata(data["wikidata"]):
+    raw_data = yaml.safe_load("".join(contents[1:-1]))
+    raw_thm = TheoremEntryRaw(**raw_data)
+    if not is_valid_wikidata(raw_thm.wikidata):
         return None
-    provers: dict[str, ProofAssistant] = {
-        "isabelle": ProofAssistant.Isabelle,
-        "hol_light": ProofAssistant.HolLight,
-        "coq": ProofAssistant.Coq,
-        "lean": ProofAssistant.Lean,
-        "metamath": ProofAssistant.Metamath,
-        "mizar": ProofAssistant.Mizar,
-    }
-    formalisations = dict()
-    for pname, variant in provers.items():
-        if pname in data:
-            entries = [_parse_formalization_entry(entry) for entry in data[pname]]
-            formalisations[variant] = entries
-        else:
-            formalisations[variant] = []
 
+    passthrough = {
+        ProofAssistant.Isabelle: raw_thm.isabelle,
+        ProofAssistant.HolLight: raw_thm.hol_light,
+        ProofAssistant.Coq: raw_thm.coq,
+        ProofAssistant.Metamath: raw_thm.metamath,
+        ProofAssistant.Mizar: raw_thm.mizar,
+        ProofAssistant.Lean: raw_thm.lean,
+    }
+    formalisations = {}
+    for (pa, raw) in passthrough.items():
+        if raw:
+            entries = [parse_formalization_entry(entry) for entry in raw]
+            if None in entries:
+                return None
+            formalisations[pa] = entries
+        else:
+            formalisations[pa] = None
     res = TheoremEntry(
-        data["wikidata"], data.get("id_suffix"), data["msc_classification"],
-        data["wikipedia_links"], formalisations
+        raw_thm.wikidata, raw_thm.id_suffix, raw_thm.msc_classification, raw_thm.wikipedia_links,
+        formalisations
     )
     return res
 
