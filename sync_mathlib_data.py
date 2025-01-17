@@ -38,7 +38,7 @@ class FormalizationStatus(Enum):
     FullProof = auto()
 
     @staticmethod
-    def from_str(input: str) -> FormalizationStatus:
+    def from_str(input: str):
         return {
             "formalized": FormalizationStatus.FullProof,
             "statement": FormalizationStatus.Statement,
@@ -56,7 +56,7 @@ class Library(Enum):
     External = auto()
 
     @staticmethod
-    def from_str(input: str) -> Library:
+    def from_str(input: str):
         return {
             "S": Library.StandardLibrary,
             "L": Library.MainLibrary,
@@ -213,29 +213,26 @@ def _write_entry(entry: TheoremEntry) -> str:
     return yaml.dump(res, sort_keys=False, allow_unicode=True)
 
 
-def regenerate_from_upstream(_args) -> None:
-    # FIXME: download the upstream files to a local directory; or
-    # if the --local option and a location are passed, look in that location instead.
-    # For now, the latter is used, with a hard-coded directory...
-    dir = "../1000-plus.github.io/_thm"
+def regenerate_from_upstream() -> None:
     # Determine the list of theorem entry files.
     theorem_entry_files = []
-    with os.scandir(dir) as entries:
+    with os.scandir('_thm') as entries:
         theorem_entry_files = [entry.name for entry in entries if entry.is_file()]
     # Parse each entry file into a theorem entry.
     theorems: List[TheoremEntry] = []
     for file in theorem_entry_files:
-        with open(os.path.join(dir, file), "r") as f:
+        with open(os.path.join('_thm', file), "r") as f:
             entry = _parse_theorem_entry(f.readlines())
             if entry:
                 theorems.append(entry)
     # Sort alphabetically according to wikidata ID.
     # FUTURE: also use MSC classification?
     # Write out a new yaml file for this, again.
-    with open(os.path.join("docs", "1000.yaml"), "w") as f:
+    with open("generated-1000.yaml", "w") as f:
         f.write("\n".join([_write_entry(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
 
 
+# todo: update this!
 def regenerate_upstream_from_yaml(dest_dir: str) -> None:
     with open(os.path.join("docs", "1000.yaml"), "r") as f:
         data_1000_yaml = yaml.safe_load(f)
@@ -291,5 +288,5 @@ def regenerate_upstream_from_yaml(dest_dir: str) -> None:
 if __name__ == "__main__":
     import sys
 
-    regenerate_from_upstream(sys.argv)
+    regenerate_from_upstream()
     # regenerate_upstream_from_yaml("../1000-plus.github.io/_thm")
