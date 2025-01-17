@@ -97,11 +97,8 @@ class TheoremEntry(NamedTuple):
 def _parse_formalization_entry(entry: dict) -> FormalisationEntry:
     status = FormalizationStatus.from_str(entry["status"])
     library = Library.from_str(entry["library"])
-    identifiers = entry.get("identifiers")
-    if library == Library.External and identifiers is None:
-        print("invalid data: external formalisations should add precise identifiers!", file=sys.stderr)
     return FormalisationEntry(
-        status, library, entry["url"], identifiers,
+        status, library, entry["url"],
         entry.get("authors"), entry.get("date"), entry.get("comment")
     )
 
@@ -180,26 +177,26 @@ def _write_entry(entry: TheoremEntry) -> str:
         mathlib_formalisations = [f for f in form if f.library == Library.MainLibrary]
         if stdlib_formalisations:
             first = stdlib_formalisations[0]
-            if first.identifiers is not None:
-                if len(first.identifiers) == 1:
-                    inner["decl"] = first.identifiers[0]
-                else:
-                    inner["decls"] = first.identifiers
+            # if first.identifiers is not None:
+            #     if len(first.identifiers) == 1:
+            #         inner["decl"] = first.identifiers[0]
+            #     else:
+            #         inner["decls"] = first.identifiers
         elif mathlib_formalisations:
             first = mathlib_formalisations[0]
-            if first.identifiers is not None:
-                if len(first.identifiers) == 1:
-                    inner["decl"] = first.identifiers[0]
-                else:
-                    inner["decls"] = first.identifiers
+            # if first.identifiers is not None:
+            #     if len(first.identifiers) == 1:
+            #         inner["decl"] = first.identifiers[0]
+            #     else:
+            #         inner["decls"] = first.identifiers
         else:
             first = form[0]
             assert first.library == Library.External  # internal consistency check
             inner["url"] = first.url
-            # We conciously write out the identifiers of the external theorems,
+            # We consciously write out the identifiers of the external theorems,
             # so they can be added upstream. Since we use a different key from the 'main library'
             # case, tooling can distinguish these just fine.
-            inner["identifiers"] = first.identifiers
+            # inner["identifiers"] = first.identifiers
         if first.authors:
             # XXX: this is inconsistent with 100.yaml
             # the former uses 'author' always; the 1000+ theorems project always uses 'authors'
