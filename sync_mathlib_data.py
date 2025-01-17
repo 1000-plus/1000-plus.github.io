@@ -90,10 +90,13 @@ class FormalisationEntry(NamedTuple):
 # Parse a typed version of a formalisation entry from its raw version.
 # XXX: this assumes all entries are well-typed, for now
 def parse_formalization_entry(entry: FormalizationEntryRaw) -> FormalisationEntry:
+    if not isinstance(entry, FormalizationEntryRaw):
+        print("foo")
+        print(entry)
     return FormalisationEntry(
-        FormalizationStatus.from_str(entry.status),
-        Library.from_str(entry.library),
-        entry.url, entry.authors, entry.date, entry.comment
+        FormalizationStatus.from_str(entry['status']),
+        Library.from_str(entry['library']),
+        entry['url'], entry.get('authors'), entry.get('date'), entry.get('comment'),
     )
 
 
