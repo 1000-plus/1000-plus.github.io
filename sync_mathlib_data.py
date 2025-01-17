@@ -37,6 +37,13 @@ class FormalizationStatus(Enum):
     # The full proof of a result was formalized.
     FullProof = auto()
 
+    @staticmethod
+    def from_str(input: str) -> FormalizationStatus:
+        return {
+            "formalized": FormalizationStatus.FullProof,
+            "statement": FormalizationStatus.Statement,
+        }[input]
+
 
 # In what library does the formalization appear?
 class Library(Enum):
@@ -47,6 +54,14 @@ class Library(Enum):
     MainLibrary = auto()
     # External to the main or standard library (e.g., a dedicated repository) ("X")
     External = auto()
+
+    @staticmethod
+    def from_str(input: str) -> Library:
+        return {
+            "S": Library.StandardLibrary,
+            "L": Library.MainLibrary,
+            "X": Library.External,
+        }[input]
 
 
 class FormalisationEntry(NamedTuple):
@@ -80,17 +95,8 @@ class TheoremEntry(NamedTuple):
 
 
 def _parse_formalization_entry(entry: dict) -> FormalisationEntry:
-    form = {
-        "formalized": FormalizationStatus.FullProof,
-        "statement": FormalizationStatus.Statement,
-    }
-    status = form[entry["status"]]
-    lib = {
-        "S": Library.StandardLibrary,
-        "L": Library.MainLibrary,
-        "X": Library.External,
-    }
-    library = lib[entry["library"]]
+    status = FormalizationStatus.from_str(entry["status"])
+    library = Library.from_str(entry["library"])
     identifiers = entry.get("identifiers")
     if library == Library.External and identifiers is None:
         print("invalid data: external formalisations should add precise identifiers!", file=sys.stderr)
