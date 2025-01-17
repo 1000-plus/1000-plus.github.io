@@ -79,8 +79,8 @@ class FormalisationEntry(NamedTuple):
 # https://github.com/1000-plus/1000-plus.github.io/blob/main/README.md#file-format.
 class TheoremEntry(NamedTuple):
     # Wikidata identifier for this theorem (or concept related to the theorem).
-    # Valid identifiers start with the latter Q followed by a number; we only save this number.
-    wikidata: int
+    # Valid identifiers start with the latter Q followed by a number.
+    wikidata: str
     # disambiguates an entry when two theorems have the same wikidata identifier.
     # X means an extra theorem on a Wikipedia page (e.g. a generalization or special case),
     # A/B/... means different theorems on one Wikipedia page that doesn't have a "main" theorem.
@@ -95,23 +95,26 @@ class TheoremEntry(NamedTuple):
 
 
 def _parse_formalization_entry(entry: dict) -> FormalisationEntry:
-    status = FormalizationStatus.from_str(entry["status"])
-    library = Library.from_str(entry["library"])
     return FormalisationEntry(
-        status, library, entry["url"],
-        entry.get("authors"), entry.get("date"), entry.get("comment")
+        FormalizationStatus.from_str(entry["status"]),
+        Library.from_str(entry["library"]),
+        entry["url"], entry.get("authors"), entry.get("date"), entry.get("comment")
     )
 
 
-def _parse_wikidata(input: str) -> int | None:
+# Check if a string is a valid wikidata identifier of the kind we want,
+# i.e. a letter Q followed by a number.
+# Print an error if not.
+def is_valid_wikidata(input: str) -> bool:
     if not input.startswith("Q"):
         print(f"error: invalid wikidata identifier {input}; must start with a letter 'Q'")
-        return None
+        return False
     try:
-        return int(input.removeprefix("Q"))
+        parsed = int(input.removeprefix("Q"))
+        return True
     except ValueError:
         print("invalid input: {input} must be the letter 'Q', followed by a number")
-        return None
+        return False
 
 
 # Return a human-ready theorem title, as well as a `TheoremEntry` with the underlying data.
@@ -123,8 +126,7 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
     # We parse the actual title from the wikipedia data below: this yields virtually the same results.
     assert contents[1].startswith("# ") or contents[1].startswith("## ")
     data = yaml.safe_load("".join(contents[1:-1]))
-    wikidata = _parse_wikidata(data["wikidata"])
-    if wikidata is None:
+    if not is_valid_wikidata(data["wikidata"]):
         return None
     provers: dict[str, ProofAssistant] = {
         "isabelle": ProofAssistant.Isabelle,
@@ -143,7 +145,7 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
             formalisations[variant] = []
 
     res = TheoremEntry(
-        wikidata, data.get("id_suffix"), data["msc_classification"],
+        data["wikidata"], data.get("id_suffix"), data["msc_classification"],
         data["wikipedia_links"], formalisations
     )
     return res
@@ -206,7 +208,7 @@ def _write_entry(entry: TheoremEntry) -> str:
             inner['date'] = first.date
         if first.comment:
             inner['comment'] = first.comment
-    key = f"Q{entry.wikidata}" + (entry.id_suffix or "")
+    key = entry.wikidata + (entry.id_suffix or "")
     res = {key: inner}
     return yaml.dump(res, sort_keys=False, allow_unicode=True)
 
