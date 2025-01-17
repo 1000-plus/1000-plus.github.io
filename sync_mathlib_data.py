@@ -221,17 +221,17 @@ def regenerate_from_upstream(_args) -> None:
     with os.scandir(dir) as entries:
         theorem_entry_files = [entry.name for entry in entries if entry.is_file()]
     # Parse each entry file into a theorem entry.
-    thms: List[TheoremEntry | None] = []
+    theorems: List[TheoremEntry] = []
     for file in theorem_entry_files:
         with open(os.path.join(dir, file), "r") as f:
-            thms.append(_parse_theorem_entry(f.readlines()))
+            entry = _parse_theorem_entry(f.readlines())
+            if entry:
+                theorems.append(entry)
     # Sort alphabetically according to wikidata ID.
     # FUTURE: also use MSC classification?
-    filtered: List[TheoremEntry] = filter(lambda t: t is not None, thms)
-
     # Write out a new yaml file for this, again.
     with open(os.path.join("docs", "1000.yaml"), "w") as f:
-        f.write("\n".join([_write_entry(thm) for thm in sorted(filtered, key=lambda t: t.wikidata)]))
+        f.write("\n".join([_write_entry(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
 
 
 def regenerate_upstream_from_yaml(dest_dir: str) -> None:
