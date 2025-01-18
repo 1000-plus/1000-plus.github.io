@@ -318,8 +318,11 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             new_entry["date"] = entry["date"]
         if "comment" in entry:
             new_entry["comment"] = entry["comment"]
+        authors = entry.get("authors")
+        if authors:
+            authors = authors.split(" and ")
         if status:
-            new_entry_typed = FormalisationEntry(status, library, entry.get("url"), entry.get("authors"), entry.get("date"), entry.get("comment"))
+            new_entry_typed = FormalisationEntry(status, library, entry.get("url"), authors, entry.get("date"), entry.get("comment"))
 
         # Read the _thm data file and compare data on Lean formalisations.
         upstream_entry = None
@@ -342,16 +345,19 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             else:
                 print(f"comparing formalisations for theorem {id_with_suffix}...")
                 if new_entry_typed != upstream_entry[0]:
+                    def compare(downstream, upstream, field: str) -> None:
+                        if downstream != upstream:
+                            print(f"entries differ in field {field}: downstream declaration has value\n  {downstream}\n while upstream has\n  {upstream}")
                     print("formalisations are different! overwriting with downstream data")
-                    print(new_entry_typed.status, upstream_entry[0].status)
-                    print(new_entry_typed.library, upstream_entry[0].library)
-                    print(new_entry_typed.url, upstream_entry[0].url)
-                    print(new_entry_typed.authors, upstream_entry[0].authors)
-                    print(new_entry_typed.date, upstream_entry[0].date)
-                    print(new_entry_typed.comment, upstream_entry[0].comment)
+                    compare(new_entry_typed.status, upstream_entry[0].status, "status")
+                    compare(new_entry_typed.library, upstream_entry[0].library, "library")
+                    compare(new_entry_typed.url, upstream_entry[0].url, "URL")
+                    compare(new_entry_typed.authors, upstream_entry[0].authors, "authors")
+                    compare(new_entry_typed.date, upstream_entry[0].date, "date")
+                    compare(new_entry_typed.comment, upstream_entry[0].comment, "comment")
                     # TODO: actually overwrite!
                 else:
-                    print("have the same data, nothing to do!")
+                    print(f"info: formalizations for theorem {id_with_suffix} have the same data")
 
         # # For each downstream declaration, read in the "upstream" yaml file and compare with the
         # # downstream result.
