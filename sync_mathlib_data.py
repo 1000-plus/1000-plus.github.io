@@ -107,7 +107,7 @@ class FormalisationEntry(NamedTuple):
 
 
 # Parse a typed version of a formalisation entry from its raw version.
-def parse_formalization_entry(entry: FormalizationEntryRaw) -> FormalisationEntry | None:
+def parse_formalization_entry(entry: dict) -> FormalisationEntry | None:
     status = FormalizationStatus.tryFrom_str(entry['status'])
     library = Library.tryFrom_str(entry['library'])
     if status is None or library is None:
@@ -190,7 +190,7 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
     formalisations = {}
     for (pa, raw) in passthrough.items():
         if raw:
-            entries: List[FormalisationEntry] = [parse_formalization_entry(entry) for entry in raw]
+            entries = [parse_formalization_entry(entry) for entry in raw]
             if None in entries:
                 return None
             formalisations[pa] = entries
@@ -270,19 +270,22 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
     return yaml.dump({key: inner}, sort_keys=False, allow_unicode=True)
 
 
+'''Directory in this repository where all data about theorems is stored.'''
+THMS_DIR = '_thm'
+
 # Generate a file 1000.yaml from this repository's _thm folder.
 def generate_downstream_file() -> None:
     # Determine the list of theorem entry files.
     theorem_entry_files = []
-    with os.scandir('_thm') as entries:
+    with os.scandir(THMS_DIR) as entries:
         theorem_entry_files = [entry.name for entry in entries if entry.is_file()]
     # Parse each entry file into a theorem entry.
     theorems: List[TheoremEntry] = []
     for file in theorem_entry_files:
-        with open(os.path.join('_thm', file), "r") as f:
+        with open(os.path.join(THMS_DIR, file), "r") as f:
             entry = _parse_theorem_entry(f.readlines())
             if entry is None:
-                print(f"warning: file _thm/{file} contains invalid input, ignoring", file=sys.stderr)
+                print(f"warning: file {os.path.join(THMS_DIR, file)} contains invalid input, ignoring", file=sys.stderr)
                 continue
             theorems.append(entry)
     # Sort alphabetically according to wikidata ID.
@@ -299,8 +302,6 @@ def generate_downstream_file() -> None:
 def update_data_from_downstream_yaml(input_file: str) -> None:
     with open(input_file, "r") as f:
         downstream_yaml_data = yaml.safe_load(f)
-    # TODO: update this function!
-
     # We go over each entry of the yaml file: each corresponds to one file in _thm.
     for id_with_suffix, entry in downstream_yaml_data.items():
         # Newly created entry, based on the downstream entries.
@@ -339,13 +340,16 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             new_entry_typed = FormalisationEntry(status, library, entry.get("url"), authors, entry.get("date"), entry.get("comment"))
 
         # Read the _thm data file and compare data on Lean formalisations.
-        upstream_entry = None
-        with open(os.path.join("_thm", f"{id_with_suffix}.md"), 'r') as f:
+        upstream_file = os.path.join(THMS_DIR, f"{id_with_suffix}.md")
+        with open(upstream_file, 'r') as f:
             contents = f.readlines()
             # The full contents of the upstream markdown file: we preserve anything
             # which is not the Lean formalisation.
             upstream_data = yaml.safe_load("".join(contents[1:-1]))
             upstream_lean_entry = _parse_theorem_entry(contents)
+        if upstream_lean_entry is None:
+            print(f"error: upstream file for theorem {id_with_suffix} is invalid, ignoring", file=sys.stderr)
+            continue
         upstream_entry = upstream_lean_entry.formalisations[ProofAssistant.Lean]
 
         overwrite = False
@@ -360,19 +364,18 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                 print(f"theorem {id_with_suffix} has one Lean formalization downstream, but {len(upstream_entry)} upstream!")
                 print("skipping data updates: please do so manually")
             else:
-                # print(f"comparing formalisations for theorem {id_with_suffix}...")
                 if new_entry_typed != upstream_entry[0]:
                     def compare(downstream, upstream, field: str) -> None:
                         if downstream != upstream:
-                            print(f"entries differ in field {field}: downstream declaration has value\n  {downstream}\n while upstream has\n  {upstream}")
-                    print("formalizations entries are different!")
+                            print(f"entries differ in field {field}: downstream declaration has value\n  {downstream}\nwhile upstream has\n  {upstream}")
+                    print(f"info: formalizations entries for {id_with_suffix} are different!")
                     compare(new_entry_typed.status, upstream_entry[0].status, "status")
                     compare(new_entry_typed.library, upstream_entry[0].library, "library")
                     compare(new_entry_typed.url, upstream_entry[0].url, "URL")
                     compare(new_entry_typed.authors, upstream_entry[0].authors, "authors")
                     compare(new_entry_typed.date, upstream_entry[0].date, "date")
                     compare(new_entry_typed.comment, upstream_entry[0].comment, "comment")
-                    print(f"overwriting file _thms/{id_with_suffix}.md with downstream data")
+                    print(f"debug: overwriting file {upstream_file} with downstream data")
                     overwrite = True
                 else:
                     print(f"info: formalizations for theorem {id_with_suffix} have the same data")
@@ -398,7 +401,7 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             # XXX: the generated formatting is not exactly the same, because yaml.dump...
             # `ruamel` seems to be better here... for now, we decide to not care
             title = _parse_title_inner(upstream_data["wikipedia_links"])
-            with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'w') as f:
+            with open(upstream_file, 'w') as f:
                 yamls = yaml.dump(upstream_data, indent=2, sort_keys=False)
                 f.write(f"---\n# {title}\n\n{yamls}\n---")
 
