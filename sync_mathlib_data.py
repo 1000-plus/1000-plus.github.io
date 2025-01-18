@@ -402,7 +402,7 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             # `ruamel` seems to be better here... for now, we decide to not care
             title = _parse_title_inner(upstream_data["wikipedia_links"])
             with open(upstream_file, 'w') as f:
-                yamls = yaml.dump(upstream_data, indent=2, sort_keys=False)
+                yamls = yaml.dump(upstream_data, allow_unicode=True, indent=2, sort_keys=False)
                 f.write(f"---\n# {title}\n\n{yamls}\n---")
 
 
