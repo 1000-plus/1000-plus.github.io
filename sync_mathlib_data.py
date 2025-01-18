@@ -295,18 +295,18 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
         (status, library) = (None, None)
         new_entry_typed = None
         if "statement" in entry:
-            (status, library) = ("statement", "L")
+            (status, library) = (FormalizationStatus.Statement, Library.MainLibrary)
             new_entry["status"] = "statement"
             new_entry["library"] = "L"
         # This means the full proof is formalised within mathlib.
         # mathlib validates that at most one of has_statement and has_formalisation holds.
         elif "decl" in entry or "decls" in entry:
-            (status, library) = ("formalized", "L")
+            (status, library) = (FormalizationStatus.FullProof, Library.MainLibrary)
             new_entry["status"] = "formalized"
             new_entry["library"] = "L"
         # A URL field means an external formalisation exists.
         elif "url" in entry:
-            (status, library) = ("formalized", "X")
+            (status, library) = (FormalizationStatus.FullProof, Library.External)
             new_entry["status"] = "formalized"
             new_entry["library"] = "X"
         if new_entry:
@@ -343,6 +343,12 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                 print(f"comparing formalisations for theorem {id_with_suffix}...")
                 if new_entry_typed != upstream_entry[0]:
                     print("formalisations are different! overwriting with downstream data")
+                    print(new_entry_typed.status, upstream_entry[0].status)
+                    print(new_entry_typed.library, upstream_entry[0].library)
+                    print(new_entry_typed.url, upstream_entry[0].url)
+                    print(new_entry_typed.authors, upstream_entry[0].authors)
+                    print(new_entry_typed.date, upstream_entry[0].date)
+                    print(new_entry_typed.comment, upstream_entry[0].comment)
                     # TODO: actually overwrite!
                 else:
                     print("have the same data, nothing to do!")
