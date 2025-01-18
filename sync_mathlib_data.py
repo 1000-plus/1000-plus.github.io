@@ -207,7 +207,8 @@ def _parse_title(entry: TheoremEntry) -> str:
     return _parse_title_inner(entry.wikipedia_links)
 
 
-def _write_entry(entry: TheoremEntry) -> str:
+# Write a theorem entry for a downstream file.
+def _write_entry_for_downstream(entry: TheoremEntry) -> str:
     inner = {"title": _parse_title(entry)}
     key = entry.wikidata + (entry.id_suffix or "")
     form = entry.formalisations[ProofAssistant.Lean]
@@ -275,7 +276,7 @@ def generate_downstream_file() -> None:
     # FUTURE: also use MSC classification?
     # Write out a new yaml file for this, again.
     with open("generated-1000.yaml", "w") as f:
-        f.write("\n".join([_write_entry(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
+        f.write("\n".join([_write_entry_for_downstream(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
     print("Careful: the generated file does not contain declaration names. "
         "Be careful with manually merging the updated file!")
 
@@ -328,14 +329,17 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
         upstream_entry = None
         with open(os.path.join("_thm", f"{id_with_suffix}.md"), 'r') as f:
             contents = f.readlines()
+            # The full contents of the upstream markdown file: we preserve anything
+            # which is not the Lean formalisation.
             upstream_data = yaml.safe_load("".join(contents[1:-1]))
             upstream_lean_entry = _parse_theorem_entry(contents)
         upstream_entry = upstream_lean_entry.formalisations[ProofAssistant.Lean]
 
+        overwrite = False
         if new_entry_typed and (not upstream_entry):
             print(f"update: found a new Lean formalisation of {id_with_suffix} in 1000.yaml, "
               "trying to update upstream file now")
-            # TODO!
+            overwrite = True
         elif (new_entry_typed is None) and upstream_entry:
             print(f"update: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
         elif new_entry_typed and upstream_entry:
@@ -356,28 +360,21 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                     compare(new_entry_typed.date, upstream_entry[0].date, "date")
                     compare(new_entry_typed.comment, upstream_entry[0].comment, "comment")
                     print(f"overwriting file _thms/{id_with_suffix}.md with downstream data")
-                    # TODO: actually overwrite!
+                    overwrite = True
                 else:
                     print(f"info: formalizations for theorem {id_with_suffix} have the same data")
 
-        # # For each downstream declaration, read in the "upstream" yaml file and compare with the
-        # # downstream result.
-        # with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'r') as f:
-        #     contents = f.readlines()
-        #     upstream_data = yaml.safe_load("".join(contents[1:-1]))
-        #     upstream_lean_entry = _parse_theorem_entry(contents)
-        # original_lean = []
-        # if upstream_lean_entry:
-        #     original_lean = upstream_lean_entry.formalisations[ProofAssistant.Lean]
+        if overwrite:
+            url = "TODO" # depends
+            inner = {
+                "status": "TODO",#as_str(new_entry_typed.status),
+                "library": "TODO", #
+                "url": new_entry[url],
+                #"authors":
 
-        # if original_lean and not has_formalisation:
-        #     print(f"update: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
-        # elif original_lean and has_formalisation:
-        #     # FUTURE: compare the formalisation entries; not done right now
-        #     pass
-        # elif has_formalisation and not original_lean:
-        #     print(f"update: found a new formalisation of {id_with_suffix} in 1000.yaml, "
-        #       "trying to update upstream file now")
+            }
+            upstream_data["lean"] = [inner]
+
         #     # Augment the original file with information about the Lean formalisation.
         #     decl = [entry.get("decl")] or entry.get("decls")
         #     inner = {"status": "formalized"}
