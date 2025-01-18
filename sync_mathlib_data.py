@@ -341,20 +341,21 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
         elif new_entry_typed and upstream_entry:
             if len(upstream_entry) > 1:
                 print(f"theorem {id_with_suffix} has one Lean formalization downstream, but {len(upstream_entry)} upstream!")
-                # TODO: what now?
+                print("skipping data updates: please do so manually")
             else:
-                print(f"comparing formalisations for theorem {id_with_suffix}...")
+                # print(f"comparing formalisations for theorem {id_with_suffix}...")
                 if new_entry_typed != upstream_entry[0]:
                     def compare(downstream, upstream, field: str) -> None:
                         if downstream != upstream:
                             print(f"entries differ in field {field}: downstream declaration has value\n  {downstream}\n while upstream has\n  {upstream}")
-                    print("formalisations are different! overwriting with downstream data")
+                    print("formalizations entries are different!")
                     compare(new_entry_typed.status, upstream_entry[0].status, "status")
                     compare(new_entry_typed.library, upstream_entry[0].library, "library")
                     compare(new_entry_typed.url, upstream_entry[0].url, "URL")
                     compare(new_entry_typed.authors, upstream_entry[0].authors, "authors")
                     compare(new_entry_typed.date, upstream_entry[0].date, "date")
                     compare(new_entry_typed.comment, upstream_entry[0].comment, "comment")
+                    print(f"overwriting file _thms/{id_with_suffix}.md with downstream data")
                     # TODO: actually overwrite!
                 else:
                     print(f"info: formalizations for theorem {id_with_suffix} have the same data")
