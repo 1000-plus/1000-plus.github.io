@@ -39,11 +39,11 @@ class FormalizationStatus(Enum):
     FullProof = auto()
 
     @staticmethod
-    def from_str(input: str):
+    def tryFrom_str(input: str):
         return {
             "formalized": FormalizationStatus.FullProof,
             "statement": FormalizationStatus.Statement,
-        }[input]
+        }.get(input)
 
 
 # In what library does the formalization appear?
@@ -57,12 +57,12 @@ class Library(Enum):
     External = auto()
 
     @staticmethod
-    def from_str(input: str):
+    def tryFrom_str(input: str):
         return {
             "S": Library.StandardLibrary,
             "L": Library.MainLibrary,
             "X": Library.External,
-        }[input]
+        }.get(input)
 
 
 # "Raw" version of a formalisation entry: not typed yet.
@@ -88,15 +88,13 @@ class FormalisationEntry(NamedTuple):
 
 
 # Parse a typed version of a formalisation entry from its raw version.
-# XXX: this assumes all entries are well-typed, for now
-def parse_formalization_entry(entry: FormalizationEntryRaw) -> FormalisationEntry:
-    if not isinstance(entry, FormalizationEntryRaw):
-        print("foo")
-        print(entry)
+def parse_formalization_entry(entry: FormalizationEntryRaw) -> FormalisationEntry | None:
+    status = FormalizationStatus.tryFrom_str(entry['status'])
+    library = Library.tryFrom_str(entry['library'])
+    if status is None or library is None:
+        return None
     return FormalisationEntry(
-        FormalizationStatus.from_str(entry['status']),
-        Library.from_str(entry['library']),
-        entry['url'], entry.get('authors'), entry.get('date'), entry.get('comment'),
+        status, library, entry['url'], entry.get('authors'), entry.get('date'), entry.get('comment'),
     )
 
 
