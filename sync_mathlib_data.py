@@ -12,6 +12,12 @@ with the one in this repository and adds/overwrites this (and only this) data.
 
 This script depends on the details of the file 1000.yaml in mathlib,
 so should evolve with any changes there.
+
+Usage: run
+  python3 sync_mathlib_data.py --downstream
+to regenerate a 1000-theorems-data.yaml file, and
+  python3 sync_mathlib_data.py --upstream <input_file.yaml>
+to update the contents of this repository from the file input_file.yaml.
 """
 
 
@@ -328,6 +334,18 @@ def regenerate_upstream_from_yaml(dest_dir: str) -> None:
 
 if __name__ == "__main__":
     import sys
-
-    regenerate_from_upstream()
-    # regenerate_upstream_from_yaml("../1000-plus.github.io/_thm")
+    match sys.argv.get(1):
+        case "--downstream":
+            regenerate_from_upstream()
+        case "--upstream":
+            input_file = sys.argv.get(2)
+            if input_file is None:
+                print("error: please specify the input file to read from: "
+                    "usage: python3 sync_mathlib_data.py --upstream <filename.yaml>", file=sys.stderr)
+                sys.exit(1)
+            pass  # regenerate_upstream_from_yaml("../1000-plus.github.io/_thm")
+        case _:
+            print("Please specify what you want to do: pass the --downstream option to regenerate a file 1000.yaml, "
+                "pass --upstream <filename.yaml> to update the theorem data files in this repository "
+                "from a downstream .yaml file.", file=sys.stderr)
+            sys.exit(1)
