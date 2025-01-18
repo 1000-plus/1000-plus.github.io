@@ -292,7 +292,7 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
         # Newly created entry, based on the downstream entries.
         new_entry = {}
         # This means the statement (and only the statement) is formalised, within mathlib.
-        (status_library) = (None, None)
+        (status, library) = (None, None)
         new_entry_typed = None
         if "statement" in entry:
             (status, library) = ("statement", "L")
@@ -323,7 +323,7 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
 
         # Read the _thm data file and compare data on Lean formalisations.
         upstream_entry = None
-        with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'r') as f:
+        with open(os.path.join("_thm", f"{id_with_suffix}.md"), 'r') as f:
             contents = f.readlines()
             upstream_data = yaml.safe_load("".join(contents[1:-1]))
             upstream_lean_entry = _parse_theorem_entry(contents)
