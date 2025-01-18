@@ -218,18 +218,22 @@ def _write_entry(entry: TheoremEntry) -> str:
         mathlib_formalisations = [f for f in form if f.library == Library.MainLibrary]
         if stdlib_formalisations:
             first = stdlib_formalisations[0]
-            # if first.identifiers is not None:
-            #     if len(first.identifiers) == 1:
-            #         inner["decl"] = first.identifiers[0]
-            #     else:
-            #         inner["decls"] = first.identifiers
+            # The same comment about declaration names applies.
+            if first.status == FormalizationStatus.FullProof:
+                inner["url"] = first.url
         elif mathlib_formalisations:
             first = mathlib_formalisations[0]
-            # if first.identifiers is not None:
-            #     if len(first.identifiers) == 1:
-            #         inner["decl"] = first.identifiers[0]
-            #     else:
-            #         inner["decls"] = first.identifiers
+            # URLs specified are of the form https://leanprover-community.github.io/1000.html#Q11518.
+            # We cannot easily parse the declaration from that, so omit it.
+            # (Could one add a comment like "# decl: cannot be inserted automatically" instead?)
+
+            # Future: one could try to hackily parse the code at
+            # https://leanprover-community.github.io/1000.html#Q11518;
+            # a "docs" link points to a URL like
+            # https://leanprover-community.github.io/mathlib4_docs/Mathlib/Geometry/Euclidean/Angle/Unoriented/RightAngle.html#EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two,
+            # in which "EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two"
+            # (the part after a #) is the declaration name.
+            # For several declarations, one would parse all declaration names.
         else:
             first = form[0]
             assert first.library == Library.External  # internal consistency check
@@ -265,6 +269,8 @@ def regenerate_from_upstream() -> None:
     # Write out a new yaml file for this, again.
     with open("generated-1000.yaml", "w") as f:
         f.write("\n".join([_write_entry(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
+    print("Careful: the generated file does not contain declaration names."
+        "Be careful with manually merging the updated file!")
 
 
 # todo: update this!
