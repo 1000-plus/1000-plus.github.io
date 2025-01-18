@@ -371,7 +371,10 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                     print(f"info: formalizations entries for {id_with_suffix} are different!")
                     compare(new_entry_typed.status, upstream_entry[0].status, "status")
                     compare(new_entry_typed.library, upstream_entry[0].library, "library")
-                    compare(new_entry_typed.url, upstream_entry[0].url, "URL")
+                    if "decl" in entry or "decls" in entry:
+                        expected = f"https://leanprover-community.github.io/1000.html#{id_with_suffix}"
+                        if not (new_entry_typed.url, upstream_entry[0].url == (None, expected)):
+                            compare(new_entry_typed.url, upstream_entry[0].url, "URL")
                     compare(new_entry_typed.authors, upstream_entry[0].authors, "authors")
                     compare(new_entry_typed.date, upstream_entry[0].date, "date")
                     compare(new_entry_typed.comment, upstream_entry[0].comment, "comment")
