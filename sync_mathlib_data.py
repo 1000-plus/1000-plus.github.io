@@ -396,18 +396,22 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
 
 if __name__ == "__main__":
     import sys
-    match sys.argv.get(1):
+    if len(sys.argv) < 2:
+        print("Please specify what you want to do: pass the --downstream option to regenerate a file 1000.yaml or "
+            "pass --upstream <filename.yaml> to update the theorem data files in this repository "
+            "from a downstream .yaml file.", file=sys.stderr)
+        sys.exit(1)
+    match sys.argv[1]:
         case "--downstream":
             generate_downstream_file()
         case "--upstream":
-            input_file = sys.argv.get(2)
-            if input_file is None:
+            if len(sys.argv) == 2:
                 print("error: please specify the input file to read from: "
                     "usage: python3 sync_mathlib_data.py --upstream <filename.yaml>", file=sys.stderr)
                 sys.exit(1)
-            update_data_from_downstream_yaml(input_file)
-        case _:
-            print("Please specify what you want to do: pass the --downstream option to regenerate a file 1000.yaml, "
-                "pass --upstream <filename.yaml> to update the theorem data files in this repository "
-                "from a downstream .yaml file.", file=sys.stderr)
+            update_data_from_downstream_yaml(sys.argv[2])
+        case unexpected:
+            print(f"Unexpected argument '{unexpected}': usage is\n  python3 sync_mathlib_data.py --downstream\n"
+            "to regenerate a downstream file 1000.yaml or\n  python3 sync_mathlib_data.py --upstream <inputfile.yaml>\n"
+            "to update the theorem data files in this repository from a downstream .yaml file.", file=sys.stderr)
             sys.exit(1)
