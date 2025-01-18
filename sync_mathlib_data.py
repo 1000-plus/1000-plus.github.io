@@ -378,10 +378,11 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                     print(f"info: formalizations for theorem {id_with_suffix} have the same data")
 
         if overwrite:
-            url = "TODO" # depends
             inner = {
                 "status": FormalizationStatus.as_str(new_entry_typed.status),
                 "library": Library.as_str(new_entry_typed.library),
+                # We conciously choose such URLs not containing declaration names,
+                # as these are more stable.
                 "url": f"https://leanprover-community.github.io/1000.html#{id_with_suffix}",
             }
             if new_entry_typed.authors:
@@ -391,26 +392,15 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             if new_entry_typed.comment:
                 inner["comment"] = new_entry_typed.comment
             upstream_data["lean"] = [inner]
-            print(inner)
-        #     # Augment the original file with information about the Lean formalisation.
-        #     decl = [entry.get("decl")] or entry.get("decls")
-        #     if decl:
-        #         # We link an URL that "auto-fixes" itself: have doc-gen search for the declaration.
-        #         # As we know it exists, that will work fine :-)
-        #         inner["identifiers"] = decl
-        #         decl = f"https://leanprover-community.github.io/mathlib4_docs/find/?pattern={decl[0]}#doc"
-        #     else:
-        #         inner["url"] = entry["url"]
-        #     if "author" in entry:
-        #         inner["authors"] = entry["author"].split(" and ")
-        #     # Human-readable theorem title from the upstream file.
-        #     # We're not preserving (for now) if this was a section or sub-section.
-        #     # XXX: the generated formatting is not exactly the same, because yaml.dump...
-        #     # `ruamel` seems to be better here... for now, we decide to not care
-        #     title = _parse_title_inner(upstream_data["wikipedia_links"])
-        #     with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'w') as f:
-        #         yamls = yaml.dump(upstream_data, indent=2, sort_keys=False)
-        #         f.write(f"---\n# {title}\n\n{yamls}\n---")
+            # Human-readable theorem title from the upstream file.
+            # We're not preserving (for now) if this was a section or sub-section.
+
+            # XXX: the generated formatting is not exactly the same, because yaml.dump...
+            # `ruamel` seems to be better here... for now, we decide to not care
+            title = _parse_title_inner(upstream_data["wikipedia_links"])
+            with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'w') as f:
+                yamls = yaml.dump(upstream_data, indent=2, sort_keys=False)
+                f.write(f"---\n# {title}\n\n{yamls}\n---")
 
 
 if __name__ == "__main__":
