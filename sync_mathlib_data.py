@@ -256,7 +256,8 @@ def _write_entry(entry: TheoremEntry) -> str:
     return yaml.dump({key: inner}, sort_keys=False, allow_unicode=True)
 
 
-def regenerate_from_upstream() -> None:
+# Generate a file 1000.yaml from this repository's _thm folder.
+def generate_downstream_file() -> None:
     # Determine the list of theorem entry files.
     theorem_entry_files = []
     with os.scandir('_thm') as entries:
@@ -279,11 +280,13 @@ def regenerate_from_upstream() -> None:
         "Be careful with manually merging the updated file!")
 
 
-# todo: update this!
-def regenerate_upstream_from_yaml(dest_dir: str) -> None:
-    with open(os.path.join("docs", "1000.yaml"), "r") as f:
-        data_1000_yaml = yaml.safe_load(f)
-    for id_with_suffix, entry in data_1000_yaml.items():
+# Update this repository's data about Lean formalisations with the contents
+# in a yaml file |input_file|.
+def update_data_from_downstream_yaml(input_file: str) -> None:
+    with open(input_file, "r") as f:
+        downstream_yaml_data = yaml.safe_load(f)
+    # TODO: update this function!
+    for id_with_suffix, entry in downstream_yaml_data.items():
         has_formalisation = "decl" in entry or "decls" in entry or "identifiers" in entry
         # For each downstream declaration, read in the "upstream" yaml file and compare with the
         # downstream result.
@@ -336,14 +339,14 @@ if __name__ == "__main__":
     import sys
     match sys.argv.get(1):
         case "--downstream":
-            regenerate_from_upstream()
+            generate_downstream_file()
         case "--upstream":
             input_file = sys.argv.get(2)
             if input_file is None:
                 print("error: please specify the input file to read from: "
                     "usage: python3 sync_mathlib_data.py --upstream <filename.yaml>", file=sys.stderr)
                 sys.exit(1)
-            pass  # regenerate_upstream_from_yaml("../1000-plus.github.io/_thm")
+            update_data_from_downstream_yaml(input_file)
         case _:
             print("Please specify what you want to do: pass the --downstream option to regenerate a file 1000.yaml, "
                 "pass --upstream <filename.yaml> to update the theorem data files in this repository "
