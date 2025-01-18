@@ -286,53 +286,112 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
     with open(input_file, "r") as f:
         downstream_yaml_data = yaml.safe_load(f)
     # TODO: update this function!
+
+    # We go over each entry of the yaml file: each corresponds to one file in _thm.
     for id_with_suffix, entry in downstream_yaml_data.items():
-        has_formalisation = "decl" in entry or "decls" in entry or "identifiers" in entry
-        # For each downstream declaration, read in the "upstream" yaml file and compare with the
-        # downstream result.
+        # Newly created entry, based on the downstream entries.
+        new_entry = {}
+        # This means the statement (and only the statement) is formalised, within mathlib.
+        (status_library) = (None, None)
+        new_entry_typed = None
+        if "statement" in entry:
+            (status, library) = ("statement", "L")
+            new_entry["status"] = "statement"
+            new_entry["library"] = "L"
+        # This means the full proof is formalised within mathlib.
+        # mathlib validates that at most one of has_statement and has_formalisation holds.
+        elif "decl" in entry or "decls" in entry:
+            (status, library) = ("formalized", "L")
+            new_entry["status"] = "formalized"
+            new_entry["library"] = "L"
+        # A URL field means an external formalisation exists.
+        elif "url" in entry:
+            (status, library) = ("formalized", "X")
+            new_entry["status"] = "formalized"
+            new_entry["library"] = "X"
+        if new_entry:
+            new_entry["url"] = f"https://leanprover-community.github.io/1000.html#{id_with_suffix}"
+        # Pass through any author, date information or comments.
+        if "authors" in entry:
+            new_entry["authors"] = entry["authors"]
+        if "date" in entry:
+            new_entry["date"] = entry["date"]
+        if "comment" in entry:
+            new_entry["comment"] = entry["comment"]
+        if status:
+            new_entry_typed = FormalisationEntry(status, library, entry.get("url"), entry.get("authors"), entry.get("date"), entry.get("comment"))
+
+        # Read the _thm data file and compare data on Lean formalisations.
+        upstream_entry = None
         with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'r') as f:
             contents = f.readlines()
             upstream_data = yaml.safe_load("".join(contents[1:-1]))
             upstream_lean_entry = _parse_theorem_entry(contents)
-        original_lean = []
-        if upstream_lean_entry:
-            original_lean = upstream_lean_entry.formalisations[ProofAssistant.Lean]
+        upstream_entry = upstream_lean_entry.formalisations[ProofAssistant.Lean]
 
-        if original_lean and not has_formalisation:
-            print(f"update: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
-        elif original_lean and has_formalisation:
-            # FUTURE: compare the formalisation entries; not done right now
-            pass
-        elif has_formalisation and not original_lean:
-            print(f"update: found a new formalisation of {id_with_suffix} in 1000.yaml, "
+        if new_entry_typed and (not upstream_entry):
+            print(f"update: found a new Lean formalisation of {id_with_suffix} in 1000.yaml, "
               "trying to update upstream file now")
-            # Augment the original file with information about the Lean formalisation.
-            decl = [entry.get("decl")] or entry.get("decls")
-            inner = {"status": "formalized"}
-            if decl:
-                # XXX: we assume no items came from the standard library...
-                inner["library"] = "M"
-                # We link an URL that "auto-fixes" itself: have doc-gen search for the declaration.
-                # As we know it exists, that will work fine :-)
-                inner["identifiers"] = decl
-                decl = f"https://leanprover-community.github.io/mathlib4_docs/find/?pattern={decl[0]}#doc"
+            # TODO!
+        elif (new_entry_typed is None) and upstream_entry:
+            print(f"update: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
+        elif new_entry_typed and upstream_entry:
+            if len(upstream_entry) > 1:
+                print(f"theorem {id_with_suffix} has one Lean formalization downstream, but {len(upstream_entry)} upstream!")
+                # TODO: what now?
             else:
-                inner["library"] = "X"
-                inner["url"] = entry["url"]
-                inner["identifiers"] = entry["identifiers"]
-            if "author" in entry:
-                inner["authors"] = entry["author"].split(" and ")
-            if "date" in entry:
-                inner["date"] = entry["date"]
-            upstream_data["lean"] = [inner]
-            # Human-readable theorem title from the upstream file.
-            # We're not preserving (for now) if this was a section or sub-section.
-            # XXX: the generated formatting is not exactly the same, because yaml.dump...
-            # `ruamel` seems to be better here... for now, we decide to not care
-            title = _parse_title_inner(upstream_data["wikipedia_links"])
-            with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'w') as f:
-                yamls = yaml.dump(upstream_data, indent=2, sort_keys=False)
-                f.write(f"---\n# {title}\n\n{yamls}\n---")
+                print(f"comparing formalisations for theorem {id_with_suffix}...")
+                if new_entry_typed != upstream_entry[0]:
+                    print("formalisations are different! overwriting with downstream data")
+                    # TODO: actually overwrite!
+                else:
+                    print("have the same data, nothing to do!")
+
+        # # For each downstream declaration, read in the "upstream" yaml file and compare with the
+        # # downstream result.
+        # with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'r') as f:
+        #     contents = f.readlines()
+        #     upstream_data = yaml.safe_load("".join(contents[1:-1]))
+        #     upstream_lean_entry = _parse_theorem_entry(contents)
+        # original_lean = []
+        # if upstream_lean_entry:
+        #     original_lean = upstream_lean_entry.formalisations[ProofAssistant.Lean]
+
+        # if original_lean and not has_formalisation:
+        #     print(f"update: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
+        # elif original_lean and has_formalisation:
+        #     # FUTURE: compare the formalisation entries; not done right now
+        #     pass
+        # elif has_formalisation and not original_lean:
+        #     print(f"update: found a new formalisation of {id_with_suffix} in 1000.yaml, "
+        #       "trying to update upstream file now")
+        #     # Augment the original file with information about the Lean formalisation.
+        #     decl = [entry.get("decl")] or entry.get("decls")
+        #     inner = {"status": "formalized"}
+        #     if decl:
+        #         # XXX: we assume no items came from the standard library...
+        #         inner["library"] = "M"
+        #         # We link an URL that "auto-fixes" itself: have doc-gen search for the declaration.
+        #         # As we know it exists, that will work fine :-)
+        #         inner["identifiers"] = decl
+        #         decl = f"https://leanprover-community.github.io/mathlib4_docs/find/?pattern={decl[0]}#doc"
+        #     else:
+        #         inner["library"] = "X"
+        #         inner["url"] = entry["url"]
+        #         inner["identifiers"] = entry["identifiers"]
+        #     if "author" in entry:
+        #         inner["authors"] = entry["author"].split(" and ")
+        #     if "date" in entry:
+        #         inner["date"] = entry["date"]
+        #     upstream_data["lean"] = [inner]
+        #     # Human-readable theorem title from the upstream file.
+        #     # We're not preserving (for now) if this was a section or sub-section.
+        #     # XXX: the generated formatting is not exactly the same, because yaml.dump...
+        #     # `ruamel` seems to be better here... for now, we decide to not care
+        #     title = _parse_title_inner(upstream_data["wikipedia_links"])
+        #     with open(os.path.join(dest_dir, f"{id_with_suffix}.md"), 'w') as f:
+        #         yamls = yaml.dump(upstream_data, indent=2, sort_keys=False)
+        #         f.write(f"---\n# {title}\n\n{yamls}\n---")
 
 
 if __name__ == "__main__":
