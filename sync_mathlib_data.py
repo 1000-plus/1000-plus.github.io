@@ -247,7 +247,7 @@ def _write_entry(entry: TheoremEntry) -> str:
         if first.authors:
             # NB: this is different from the 100 theorems project
             # 100 theorems names the field 'author'; this project uses 'authors'
-            inner["author"] = " and ".join(first.authors)
+            inner["authors"] = " and ".join(first.authors)
         # Add additional metadata, so no information is lost in the generated yaml file.
         if first.date:
             inner['date'] = first.date
