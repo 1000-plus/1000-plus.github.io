@@ -205,11 +205,15 @@ def _parse_title(entry: TheoremEntry) -> str:
 
 def _write_entry(entry: TheoremEntry) -> str:
     inner = {"title": _parse_title(entry)}
+    key = entry.wikidata + (entry.id_suffix or "")
     form = entry.formalisations[ProofAssistant.Lean]
     if form:
+        # We process the data fields in README order, for prettier output.
         # If there are several formalisations, we prioritise mathlib and stdlib
         # formalisations over external projects.
         # If there are still several, we pick the first in the theorem file.
+        if len(form) > 1:
+            print(f"warning: there are several formalisations for theorem {key}, skipping all but the first one")
         stdlib_formalisations = [f for f in form if f.library == Library.StandardLibrary]
         mathlib_formalisations = [f for f in form if f.library == Library.MainLibrary]
         if stdlib_formalisations:
@@ -229,23 +233,19 @@ def _write_entry(entry: TheoremEntry) -> str:
         else:
             first = form[0]
             assert first.library == Library.External  # internal consistency check
-            inner["url"] = first.url
-            # We consciously write out the identifiers of the external theorems,
-            # so they can be added upstream. Since we use a different key from the 'main library'
-            # case, tooling can distinguish these just fine.
-            # inner["identifiers"] = first.identifiers
+            # We don't mentional external formalisations of just the statement in mathlib's file.
+            if first.status == FormalizationStatus.FullProof:
+                inner["url"] = first.url
         if first.authors:
-            # XXX: this is inconsistent with 100.yaml
-            # the former uses 'author' always; the 1000+ theorems project always uses 'authors'
+            # NB: this is different from the 100 theorems project
+            # 100 theorems names the field 'author'; this project uses 'authors'
             inner["author"] = " and ".join(first.authors)
         # Add additional metadata, so no information is lost in the generated yaml file.
         if first.date:
             inner['date'] = first.date
         if first.comment:
             inner['comment'] = first.comment
-    key = entry.wikidata + (entry.id_suffix or "")
-    res = {key: inner}
-    return yaml.dump(res, sort_keys=False, allow_unicode=True)
+    return yaml.dump({key: inner}, sort_keys=False, allow_unicode=True)
 
 
 def regenerate_from_upstream() -> None:
