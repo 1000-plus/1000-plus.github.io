@@ -50,6 +50,12 @@ class FormalizationStatus(Enum):
             "formalized": FormalizationStatus.FullProof,
             "statement": FormalizationStatus.Statement,
         }.get(input)
+    @staticmethod
+    def as_str(entry) -> str:
+        return {
+            FormalizationStatus.FullProof: "formalized",
+            FormalizationStatus.Statement: "statement",
+        }[entry]
 
 
 # In what library does the formalization appear?
@@ -69,6 +75,13 @@ class Library(Enum):
             "L": Library.MainLibrary,
             "X": Library.External,
         }.get(input)
+    @staticmethod
+    def as_str(entry) -> str:
+        return {
+            Library.StandardLibrary: "S",
+            Library.MainLibrary: "L",
+            Library.External: "X"
+        }[entry]
 
 
 # "Raw" version of a formalisation entry: not typed yet.
@@ -367,33 +380,29 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
         if overwrite:
             url = "TODO" # depends
             inner = {
-                "status": "TODO",#as_str(new_entry_typed.status),
-                "library": "TODO", #
-                "url": new_entry[url],
-                #"authors":
-
+                "status": FormalizationStatus.as_str(new_entry_typed.status),
+                "library": Library.as_str(new_entry_typed.library),
+                "url": f"https://leanprover-community.github.io/1000.html#{id_with_suffix}",
             }
+            if new_entry_typed.authors:
+                inner["authors"] = new_entry_typed.authors
+            if new_entry_typed.date:
+                inner["date"] = new_entry_typed.date
+            if new_entry_typed.comment:
+                inner["comment"] = new_entry_typed.comment
             upstream_data["lean"] = [inner]
-
+            print(inner)
         #     # Augment the original file with information about the Lean formalisation.
         #     decl = [entry.get("decl")] or entry.get("decls")
-        #     inner = {"status": "formalized"}
         #     if decl:
-        #         # XXX: we assume no items came from the standard library...
-        #         inner["library"] = "M"
         #         # We link an URL that "auto-fixes" itself: have doc-gen search for the declaration.
         #         # As we know it exists, that will work fine :-)
         #         inner["identifiers"] = decl
         #         decl = f"https://leanprover-community.github.io/mathlib4_docs/find/?pattern={decl[0]}#doc"
         #     else:
-        #         inner["library"] = "X"
         #         inner["url"] = entry["url"]
-        #         inner["identifiers"] = entry["identifiers"]
         #     if "author" in entry:
         #         inner["authors"] = entry["author"].split(" and ")
-        #     if "date" in entry:
-        #         inner["date"] = entry["date"]
-        #     upstream_data["lean"] = [inner]
         #     # Human-readable theorem title from the upstream file.
         #     # We're not preserving (for now) if this was a section or sub-section.
         #     # XXX: the generated formatting is not exactly the same, because yaml.dump...
