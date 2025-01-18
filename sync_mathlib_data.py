@@ -260,14 +260,16 @@ def regenerate_from_upstream() -> None:
     for file in theorem_entry_files:
         with open(os.path.join('_thm', file), "r") as f:
             entry = _parse_theorem_entry(f.readlines())
-            if entry:
-                theorems.append(entry)
+            if entry is None:
+                print(f"warning: file _thm/{file} contains invalid input, ignoring", file=sys.stderr)
+                continue
+            theorems.append(entry)
     # Sort alphabetically according to wikidata ID.
     # FUTURE: also use MSC classification?
     # Write out a new yaml file for this, again.
     with open("generated-1000.yaml", "w") as f:
         f.write("\n".join([_write_entry(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
-    print("Careful: the generated file does not contain declaration names."
+    print("Careful: the generated file does not contain declaration names. "
         "Be careful with manually merging the updated file!")
 
 
