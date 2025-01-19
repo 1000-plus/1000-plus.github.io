@@ -213,7 +213,14 @@ def _parse_title_inner(wiki_links: List[str]) -> str:
     if suf == "s":
         title += "s"
     if "|" in title:
-        title = title.partition("|")[2]
+        # We generally prefer wikipedia's lemma name over the display name
+        # in the list, as the former includes disambiguation with mathematical
+        # areas. (The latter does not; the wikipedia list adds it as a separate parenthetical.)
+        # Exceptions: if the link is to a sub-section, or doesn't contain the word
+        # "theorem", we use the displayed title.
+        (wikipedia_lemma, _, displayed) = title.partition("|")
+        prefer_display = "#" in wikipedia_lemma or "theorem" not in wikipedia_lemma
+        title = displayed if prefer_display else wikipedia_lemma
     return title
 
 def _parse_title(entry: TheoremEntry) -> str:
