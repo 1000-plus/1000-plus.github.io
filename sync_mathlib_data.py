@@ -295,11 +295,12 @@ def generate_downstream_file() -> None:
                 print(f"warning: file {os.path.join(THMS_DIR, file)} contains invalid input, ignoring", file=sys.stderr)
                 continue
             theorems.append(entry)
-    # Sort alphabetically according to wikidata ID.
+    # Sort alphabetically according to wikidata ID
+    # (more precisely, according to the number of the ID: Q42 comes before Q100).
     # FUTURE: also use MSC classification?
     # Write out a new yaml file for this, again.
     with open("generated-1000.yaml", "w") as f:
-        f.write("\n".join([_write_entry_for_downstream(thm) for thm in sorted(theorems, key=lambda t: t.wikidata)]))
+        f.write("\n".join([_write_entry_for_downstream(thm) for thm in sorted(theorems, key=lambda t: int(t.wikidata[1:]))]))
     print("Careful: the generated file does not contain declaration names. "
         "Be careful with manually merging the updated file!")
 
