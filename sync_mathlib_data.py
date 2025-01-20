@@ -263,6 +263,9 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
             first = form[0]
             assert first.library == Library.External  # internal consistency check
             # We don't mentional external formalisations of just the statement in mathlib's file.
+            # NB: this will overwrite an "interesting" external URL with the upstream one.
+            # We cannot really help that; this is another change in the generated 1000.yaml file
+            # that should not be committed downstream.
             if first.status == FormalizationStatus.FullProof:
                 inner["url"] = first.url
         if first.authors:
