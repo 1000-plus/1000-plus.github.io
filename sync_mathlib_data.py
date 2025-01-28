@@ -166,7 +166,7 @@ def is_valid_wikidata(input: str) -> bool:
         return False
 
 
-# Return a human-ready theorem title, as well as a `TheoremEntry` with the underlying data.
+# Return a `TheoremEntry` with the underlying data
 # Return `None` if `contents` does not describe a valid theorem entry.
 def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
     assert contents[0].rstrip() == "---"
@@ -290,6 +290,8 @@ def generate_downstream_file() -> None:
     with os.scandir(THMS_DIR) as entries:
         theorem_entry_files = [entry.name for entry in entries if entry.is_file()]
     # Parse each entry file into a theorem entry.
+    # We record the number of entries where a mathlib declaration name was omitted.
+    number_decls_omitted = 0
     theorems: List[TheoremEntry] = []
     for file in theorem_entry_files:
         with open(os.path.join(THMS_DIR, file), "r") as f:
@@ -297,16 +299,20 @@ def generate_downstream_file() -> None:
             if entry is None:
                 print(f"warning: file {os.path.join(THMS_DIR, file)} contains invalid input, ignoring", file=sys.stderr)
                 continue
+            lean = entry.formalisations[ProofAssistant.Lean]
+            if lean and lean[0].library == Library.MainLibrary:
+                number_decls_omitted += 1
             theorems.append(entry)
     # Sort alphabetically according to wikidata ID
     # (more precisely, according to the number of the ID: Q42 comes before Q100).
     # FUTURE: also use MSC classification?
     # Write out a new yaml file for this, again.
     with open("generated-1000.yaml", "w") as f:
-        f.write("\n".join([_write_entry_for_downstream(thm) for thm in sorted(theorems, key=lambda t: int(t.wikidata[1:]))]))
-    print("Careful: the generated file does not contain declaration names. "
-        "Be careful with manually merging the updated file!")
-
+        sorted_thms = sorted(theorems, key=lambda t: int(t.wikidata[1:]))
+        f.write("\n".join([_write_entry_for_downstream(thm) for thm in sorted_thms]))
+    if number_decls_omitted > 0:
+        print(f"Careful: the generated file does not contain declaration names; {number_decls_omitted} "
+            "entries for mathlib were generated without declaration names. Pay attention when merging the updated file!")
 
 # Update this repository's data about Lean formalisations with the contents
 # in a yaml file |input_file|.
