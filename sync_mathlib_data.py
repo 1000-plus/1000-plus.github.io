@@ -333,12 +333,15 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             (status, library) = (FormalizationStatus.Statement, Library.MainLibrary)
             new_entry["status"] = "statement"
             new_entry["library"] = "L"
+            new_entry["identifiers"] = [entry["statement"]]
         # This means the full proof is formalised within mathlib.
         # mathlib validates that at most one of has_statement and has_formalisation holds.
         elif "decl" in entry or "decls" in entry:
             (status, library) = (FormalizationStatus.FullProof, Library.MainLibrary)
             new_entry["status"] = "formalized"
             new_entry["library"] = "L"
+            decl = entry.get("decls") or [entry.get("decl")]
+            new_entry["identifiers"] = None if decl == [None] else decl
         # A URL field means an external formalisation exists.
         elif "url" in entry:
             (status, library) = (FormalizationStatus.FullProof, Library.External)
