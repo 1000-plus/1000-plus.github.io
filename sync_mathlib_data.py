@@ -91,6 +91,7 @@ class FormalizationEntryRaw:
     library: str
     url: str
     authors: Optional[List[str]] = None
+    identifiers: Optional[List[str]] = None
     date: Optional[datetime] = None
     comment: Optional[str] = None
 
@@ -101,6 +102,8 @@ class FormalisationEntry(NamedTuple):
     # A URL pointing to the formalization
     url: str
     authors: Optional[List[str]]
+    # The name of the result/statement in a proof assistant (or several of them)
+    identifiers: Optional[List[str]]
     # Format `YYYY-MM-DD`, `YYYY-MM` or `YYYY` in the source file.
     date: Optional[datetime]
     comment: Optional[str]
@@ -113,7 +116,7 @@ def parse_formalization_entry(entry: dict) -> FormalisationEntry | None:
     if status is None or library is None:
         return None
     return FormalisationEntry(
-        status, library, entry['url'], entry.get('authors'), entry.get('date'), entry.get('comment'),
+        status, library, entry['url'], entry.get('authors'), entry.get('identifiers'), entry.get('date'), entry.get('comment'),
     )
 
 
@@ -241,13 +244,8 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
             print(f"warning: there are several formalisations for theorem {key}, skipping all but the first one")
         stdlib_formalisations = [f for f in form if f.library == Library.StandardLibrary]
         mathlib_formalisations = [f for f in form if f.library == Library.MainLibrary]
-        if stdlib_formalisations:
-            first = stdlib_formalisations[0]
-            # The same comment about declaration names applies.
-            if first.status == FormalizationStatus.FullProof:
-                inner["url"] = first.url
-        elif mathlib_formalisations:
-            first = mathlib_formalisations[0]
+        if stdlib_formalisations or mathlib_formalisations:
+            first = stdlib_formalisations[0] or mathlib_formalisations[0]
             # URLs specified are of the form https://leanprover-community.github.io/1000.html#Q11518.
             # We cannot easily parse the declaration from that, so omit it.
             # (Could one add a comment like "# decl: cannot be inserted automatically" instead?)
@@ -259,6 +257,20 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
             # in which "EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two"
             # (the part after a #) is the declaration name.
             # For several declarations, one would parse all declaration names.
+
+            # We parse the identifier names upstream and populate the 'statement',
+            # 'decl' or 'decls' fields from it.
+            if first.identifiers:
+                match first.status:
+                    case FormalizationStatus.Statement:
+                        inner["statement"] = first.identifiers
+                    case FormalizationStatus.FullProof:
+                        if len(first.identifiers) == 1:
+                            inner["decl"] = first.identifiers[0]
+                        else:
+                            inner["decls"] = first.identifiers
+            else:
+                print(f"warning: entry for theorem {_parse_title(entry)} is in Std or mathlib, but missing an identifier", file=sys.stderr)
         else:
             first = form[0]
             assert first.library == Library.External  # internal consistency check
@@ -330,12 +342,15 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             (status, library) = (FormalizationStatus.Statement, Library.MainLibrary)
             new_entry["status"] = "statement"
             new_entry["library"] = "L"
+            new_entry["identifiers"] = [entry["statement"]]
         # This means the full proof is formalised within mathlib.
         # mathlib validates that at most one of has_statement and has_formalisation holds.
         elif "decl" in entry or "decls" in entry:
             (status, library) = (FormalizationStatus.FullProof, Library.MainLibrary)
             new_entry["status"] = "formalized"
             new_entry["library"] = "L"
+            decl = entry.get("decls") or [entry.get("decl")]
+            new_entry["identifiers"] = None if decl == [None] else decl
         # A URL field means an external formalisation exists.
         elif "url" in entry:
             (status, library) = (FormalizationStatus.FullProof, Library.External)
