@@ -31,6 +31,7 @@ For each formalization in each proof assistant, we record the following informat
   - "X": external to the main or standard library (e.g. a dedicated repository)
 * `url`: a URL pointing to the formalization
 * `authors`:  list of authors of the formalisation; optional
+* `identifier`:  (optional). The name of the result/statement in a proof assistant.
 * `date`:  (optional). Format: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`
 * `comment`: (optional)
 
