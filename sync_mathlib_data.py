@@ -91,6 +91,7 @@ class FormalizationEntryRaw:
     library: str
     url: str
     authors: Optional[List[str]] = None
+    identifiers: Optional[List[str]] = None
     date: Optional[datetime] = None
     comment: Optional[str] = None
 
@@ -101,6 +102,8 @@ class FormalisationEntry(NamedTuple):
     # A URL pointing to the formalization
     url: str
     authors: Optional[List[str]]
+    # The name of the result/statement in a proof assistant (or several of them)
+    identifiers: Optional[List[str]]
     # Format `YYYY-MM-DD`, `YYYY-MM` or `YYYY` in the source file.
     date: Optional[datetime]
     comment: Optional[str]
@@ -113,7 +116,7 @@ def parse_formalization_entry(entry: dict) -> FormalisationEntry | None:
     if status is None or library is None:
         return None
     return FormalisationEntry(
-        status, library, entry['url'], entry.get('authors'), entry.get('date'), entry.get('comment'),
+        status, library, entry['url'], entry.get('authors'), entry.get('identifiers'), entry.get('date'), entry.get('comment'),
     )
 
 
