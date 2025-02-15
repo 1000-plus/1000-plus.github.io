@@ -23,7 +23,7 @@ layout: plain
     <tbody>
         {% assign sorted = site.thm | sort: "wikidata" %}
         {% for t in sorted %}
-            <tr>
+            <tr id="{{ t.wikidata }}">
                 <td class="dt-body-center"><span title="{{ site.data.msc[t.msc_classification] }}">{{ t.msc_classification }}</span></td>
                 <td>
                     {% assign wl = t.wikipedia_links.first %}
