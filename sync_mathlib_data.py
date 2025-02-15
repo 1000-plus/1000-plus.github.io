@@ -35,6 +35,7 @@ class ProofAssistant(Enum):
     Lean = auto()
     Metamath = auto()
     Mizar = auto()
+    Agda = auto()
 
 
 # The different formalisation statusses: just the statement or also the proof.
@@ -130,6 +131,7 @@ class TheoremEntryRaw:
     lean: Optional[List[FormalizationEntryRaw]] = None
     metamath: Optional[List[FormalizationEntryRaw]] = None
     mizar: Optional[List[FormalizationEntryRaw]] = None
+    agda: Optional[List[FormalizationEntryRaw]] = None
 
 
 # Information about a theorem entry: taken from the specification at
@@ -185,6 +187,7 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
         ProofAssistant.Coq: raw_thm.coq,
         ProofAssistant.Metamath: raw_thm.metamath,
         ProofAssistant.Mizar: raw_thm.mizar,
+        ProofAssistant.Agda: raw_thm.agda,
         ProofAssistant.Lean: raw_thm.lean,
     }
     formalisations = {}

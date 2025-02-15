@@ -18,12 +18,13 @@ layout: plain
             <th class="dt-head-center">Lean</th>
             <th class="dt-head-center">Metamath</th>
             <th class="dt-head-center">Mizar</th>
+            <th class="dt-head-center">Agda</th>
         </tr>
     </thead>
     <tbody>
         {% assign sorted = site.thm | sort: "wikidata" %}
         {% for t in sorted %}
-            {% if t.isabelle or t.hol_light or t.coq or t.lean or t.metamath or t.mizar %}
+            {% if t.isabelle or t.hol_light or t.coq or t.lean or t.metamath or t.mizar or t.agda %}
             <tr>
                 <td class="dt-body-center"><span title="{{ site.data.msc[t.msc_classification] }}">{{ t.msc_classification }}</span></td>
                 <td>
@@ -49,7 +50,20 @@ layout: plain
                     {% endif %}
                 </td>
                 <td class="dt-body-center"></td>
-                <td class="dt-body-center"></td>
+                <td class="dt-body-center">
+                    {% if t.agda %}
+                        {% for f in t.agda %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td class="dt-body-center">
+                    {% if t.agda %}
+                        {% for f in t.agda %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
             </tr>
             {% endif %}
         {% endfor %}

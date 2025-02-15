@@ -18,6 +18,7 @@ layout: plain
             <th class="dt-head-center">Lean</th>
             <th class="dt-head-center">Metamath</th>
             <th class="dt-head-center">Mizar</th>
+            <th class="dt-head-center">Agda</th>
         </tr>
     </thead>
     <tbody>
@@ -49,6 +50,13 @@ layout: plain
                 </td>
                 <td class="dt-body-center"></td>
                 <td class="dt-body-center"></td>
+                <td class="dt-body-center">
+                    {% if t.agda %}
+                        {% for f in t.agda %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
             </tr>
         {% endfor %}
     </tbody>
