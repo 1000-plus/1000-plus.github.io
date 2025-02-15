@@ -38,9 +38,27 @@ layout: plain
                     {% endif %}
                     <a href="https://en.wikipedia.org/wiki/{{ wurl }}">{{ wlabel }}</a>
                 </td>
-                <td class="dt-body-center"></td>
-                <td class="dt-body-center"></td>
-                <td class="dt-body-center"></td>
+                <td class="dt-body-center">
+                    {% if t.isabelle %}
+                        {% for f in t.isabelle %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td class="dt-body-center">
+                    {% if t.hol_light %}
+                        {% for f in t.hol_light %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td class="dt-body-center">
+                    {% if t.coq %}
+                        {% for f in t.coq %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
                 <td class="dt-body-center">
                     {% if t.lean %}
                         {% for f in t.lean %}
@@ -48,8 +66,20 @@ layout: plain
                         {% endfor %}
                     {% endif %}
                 </td>
-                <td class="dt-body-center"></td>
-                <td class="dt-body-center"></td>
+                <td class="dt-body-center">
+                    {% if t.metamath %}
+                        {% for f in t.metamath %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td class="dt-body-center">
+                    {% if t.mizar %}
+                        {% for f in t.mizar %}
+                            <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
+                        {% endfor %}
+                    {% endif %}
+                </td>
             </tr>
             {% endif %}
         {% endfor %}
