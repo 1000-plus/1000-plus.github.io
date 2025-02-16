@@ -35,7 +35,7 @@ layout: plain
                         {% assign wlabel = wl | remove: '[[' | remove: ']]' %}
                         {% assign wurl = wlabel %}
                     {% endif %}
-                    <a href="https://en.wikipedia.org/wiki/{{ wurl }}">{{ wlabel }}</a>
+                    <a href="https://en.wikipedia.org/wiki/{{ wurl }}" title="Wikidata ID {{ t.wikidata }}">{{ wlabel }}</a>
                 </td>
                 <td class="dt-body-center"></td>
                 <td class="dt-body-center"></td>
