@@ -31,7 +31,7 @@ import yaml
 class ProofAssistant(Enum):
     Isabelle = auto()
     HolLight = auto()
-    Coq = auto()
+    Rocq = auto()
     Lean = auto()
     Metamath = auto()
     Mizar = auto()
@@ -126,7 +126,7 @@ class TheoremEntryRaw:
     id_suffix: Optional[str] = None
     isabelle: Optional[List[FormalizationEntryRaw]] = None
     hol_light: Optional[List[FormalizationEntryRaw]] = None
-    coq: Optional[List[FormalizationEntryRaw]] = None
+    rocq: Optional[List[FormalizationEntryRaw]] = None
     lean: Optional[List[FormalizationEntryRaw]] = None
     metamath: Optional[List[FormalizationEntryRaw]] = None
     mizar: Optional[List[FormalizationEntryRaw]] = None
@@ -182,7 +182,7 @@ def _parse_theorem_entry(contents: List[str]) -> TheoremEntry | None:
     passthrough = {
         ProofAssistant.Isabelle: raw_thm.isabelle,
         ProofAssistant.HolLight: raw_thm.hol_light,
-        ProofAssistant.Coq: raw_thm.coq,
+        ProofAssistant.Rocq: raw_thm.rocq,
         ProofAssistant.Metamath: raw_thm.metamath,
         ProofAssistant.Mizar: raw_thm.mizar,
         ProofAssistant.Lean: raw_thm.lean,

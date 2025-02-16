@@ -20,7 +20,7 @@ For an example of a file with a formalization entry, see [Q208416.md](_thm/Q2084
 * `id_suffix` (optional): disambiguates an entry when two theorems have the same wikidata identifier. `X` means an extra theorem on a Wikipedia page (e.g. a generalization or special case), `A`/`B`/... means different theorems on one Wikipedia page that doesn't have a "main" theorem.
 * `msc_classification`: Our best guess of the [MSC-classification](https://msc2020.org/) of this theorem. Please PR a better suggestion!
 * `wikipedia_links`: list of exact wikipedia links to the relevant page(s). Each link has the format `[[Page name]]` or `[[Wikilink|Displayed name]]`.
-* Then zero or more entries for the formalizations in any of the supported proof assistants (`isabelle`, `hol_light`, `coq`, `lean`, `metamath`, `mizar`). Several formalization entries for one assistant are allowed.
+* Then zero or more entries for the formalizations in any of the supported proof assistants (`isabelle`, `hol_light`, `rocq` (formerly `coq`), `lean`, `metamath`, `mizar`). Several formalization entries for one assistant are allowed.
 
 For each formalization in each proof assistant, we record the following information
 
