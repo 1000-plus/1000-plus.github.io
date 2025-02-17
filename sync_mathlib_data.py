@@ -236,12 +236,13 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
     key = entry.wikidata + (entry.id_suffix or "")
     form = entry.formalisations[ProofAssistant.Lean]
     if form:
-        # We process the data fields in README order, for prettier output.
+        # We process the data fields in the order of mathlib's yaml file, for prettier output.
         # If there are several formalisations, we prioritise mathlib and stdlib
         # formalisations over external projects.
         # If there are still several, we pick the first in the theorem file.
         if len(form) > 1:
             print(f"warning: there are several formalisations for theorem {key}, skipping all but the first one")
+
         stdlib_formalisations = [f for f in form if f.library == Library.StandardLibrary]
         mathlib_formalisations = [f for f in form if f.library == Library.MainLibrary]
         if stdlib_formalisations or mathlib_formalisations:
@@ -275,16 +276,18 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
             first = form[0]
             assert first.library == Library.External  # internal consistency check
             # We don't mentional external formalisations of just the statement in mathlib's file.
-            # NB: this will overwrite an "interesting" external URL with the upstream one.
+            # NB: the following would overwrite an "interesting" external URL with the upstream one.
             # We cannot really help that; this is another change in the generated 1000.yaml file
             # that should not be committed downstream.
-            if first.status == FormalizationStatus.FullProof:
-                inner["url"] = first.url
+            # Instead, we choose to do nothing; that is one fewer change to ignore.
+            # if first.status == FormalizationStatus.FullProof:
+            #     inner["url"] = first.url
+
+        # Add additional metadata, so no information is lost in the generated yaml file.
         if first.authors:
             # NB: this is different from the 100 theorems project
             # 100 theorems names the field 'author'; this project uses 'authors'
             inner["authors"] = " and ".join(first.authors)
-        # Add additional metadata, so no information is lost in the generated yaml file.
         if first.date:
             inner['date'] = first.date
         if first.comment:
