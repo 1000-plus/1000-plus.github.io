@@ -368,6 +368,10 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
 
         # Read the _thm data file and compare data on Lean formalisations.
         upstream_file = os.path.join(THMS_DIR, f"{id_with_suffix}.md")
+        if id_with_suffix == 'Q513028':
+            # TODO: remove this entry once the upstream theorems list gets re-generated
+            print(f"warning: skipping downstream theorem Q513028 as the file is not yet present upstream", file=sys.stderr)
+            continue
         with open(upstream_file, 'r') as f:
             contents = f.readlines()
             # The full contents of the upstream markdown file: we preserve anything
