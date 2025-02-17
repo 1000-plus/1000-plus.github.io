@@ -408,11 +408,12 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                     messages.append(compare(new_entry_typed.identifiers, upstream_entry[0].identifiers, "identifiers"))
                     messages.append(compare(new_entry_typed.date, upstream_entry[0].date, "date"))
                     messages.append(compare(new_entry_typed.comment, upstream_entry[0].comment, "comment"))
-                    real_msg = [msg for msg in messages if msg]
-                    if real_msg:
+                    real_messages = [msg for msg in messages if msg]
+                    if real_messages:
                         overwrite = True
                         print(f"info: formalizations entries for {id_with_suffix} are different!")
-                        print(msg)
+                        for m in real_messages:
+                            print(m)
                         print(f"debug: overwriting file {upstream_file} with downstream data")
                 else:
                     print(f"info: formalizations for theorem {id_with_suffix} have the same data")
