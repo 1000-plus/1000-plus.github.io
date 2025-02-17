@@ -395,6 +395,7 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
                         if not (new_entry_typed.url, upstream_entry[0].url == (None, expected)):
                             messages.append(compare(new_entry_typed.url, upstream_entry[0].url, "URL"))
                     messages.append(compare(new_entry_typed.authors, upstream_entry[0].authors, "authors"))
+                    messages.append(compare(new_entry_typed.identifiers, upstream_entry[0].identifiers, "identifiers"))
                     messages.append(compare(new_entry_typed.date, upstream_entry[0].date, "date"))
                     messages.append(compare(new_entry_typed.comment, upstream_entry[0].comment, "comment"))
                     real_msg = [msg for msg in messages if msg]
@@ -416,6 +417,8 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             }
             if new_entry_typed.authors:
                 inner["authors"] = new_entry_typed.authors
+            if new_entry_typed.identifiers:
+                inner["identifiers"] = new_entry_typed.identifiers
             if new_entry_typed.date:
                 inner["date"] = new_entry_typed.date
             if new_entry_typed.comment:
