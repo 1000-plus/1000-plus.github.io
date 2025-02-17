@@ -53,8 +53,8 @@ layout: plain
                     {% endif %}
                 </td>
                 <td class="dt-body-center">
-                    {% if t.coq %}
-                        {% for f in t.coq %}
+                    {% if t.rocq %}
+                        {% for f in t.rocq %}
                             <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
                         {% endfor %}
                     {% endif %}
