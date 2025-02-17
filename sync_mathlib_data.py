@@ -381,11 +381,11 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
 
         overwrite = False
         if new_entry_typed and (not upstream_entry):
-            print(f"update: found a new Lean formalisation of {id_with_suffix} in 1000.yaml, "
+            print(f"info: found a new Lean formalisation of {id_with_suffix} in 1000.yaml, "
               "trying to update upstream file now")
             overwrite = True
         elif (new_entry_typed is None) and upstream_entry:
-            print(f"update: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
+            print(f"info: Lean formalisation of {id_with_suffix} is noted upstream, but not downstream!")
         elif new_entry_typed and upstream_entry:
             if len(upstream_entry) > 1:
                 print(f"theorem {id_with_suffix} has one Lean formalization downstream, but {len(upstream_entry)} upstream!")
