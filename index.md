@@ -24,7 +24,7 @@ layout: plain
         {% assign sorted = site.thm | sort: "wikidata" %}
         {% for t in sorted %}
             {% if t.isabelle or t.hol_light or t.coq or t.lean or t.metamath or t.mizar %}
-            <tr>
+            <tr id="{{ t.wikidata }}">
                 <td class="dt-body-center"><span title="{{ site.data.msc[t.msc_classification] }}">{{ t.msc_classification }}</span></td>
                 <td>
                     {% assign wl = t.wikipedia_links.first %}
@@ -36,7 +36,7 @@ layout: plain
                         {% assign wlabel = wl | remove: '[[' | remove: ']]' %}
                         {% assign wurl = wlabel %}
                     {% endif %}
-                    <a href="https://en.wikipedia.org/wiki/{{ wurl }}">{{ wlabel }}</a>
+                    <a href="https://en.wikipedia.org/wiki/{{ wurl }}" title="Wikidata ID {{ t.wikidata }}">{{ wlabel }}</a>
                 </td>
                 <td class="dt-body-center">
                     {% if t.isabelle %}

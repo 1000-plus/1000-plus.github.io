@@ -7,6 +7,21 @@ The entries of this list are extracted from Wikipedia's [List of Theorems](https
 We do not accept entries that are not part of that list.
 We will (semiregularly) update the list to match the Wikipedia list. Please do not vandalize Wikipedia to try to add nonsensical entries to the list.
 
+## Linking to the list
+
+You can link to a theorem entry in the 1000+ theorems list by using its Wikidata
+identifier. To work around the pagination feature of the website, although this
+is a temporary solution, set the GET parameter `length` to `-1`. This tells the
+website to display the entire list without pagination. For example, to link to
+Zeckendorf's theorem, find its Wikidata identifier, in this case `Q1188392`.
+Then the link into the list of formalized theorems is
+
+- [`https://1000-plus.github.io/?length=-1#Q1188392`](https://1000-plus.github.io/?length=-1#Q1188392),
+
+and the link into the list of all theorems is
+
+- [`https://1000-plus.github.io/all?length=-1#Q1188392`](https://1000-plus.github.io/all?length=-1#Q1188392).
+
 ## Contributing
 
 We welcome contributions! Please open a PR with additions or corrections!
@@ -34,4 +49,3 @@ For each formalization in each proof assistant, we record the following informat
 * `identifiers`: (optional). A list of names for the result/statement.
 * `date`: (optional). Format: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`
 * `comment`: (optional)
-
