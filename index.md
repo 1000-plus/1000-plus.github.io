@@ -14,7 +14,7 @@ layout: plain
             <th>Name</th>
             <th class="dt-head-center">Isabelle</th>
             <th class="dt-head-center">HOL Light</th>
-            <th class="dt-head-center">Coq/Rocq</th>
+            <th class="dt-head-center">Rocq</th>
             <th class="dt-head-center">Lean</th>
             <th class="dt-head-center">Metamath</th>
             <th class="dt-head-center">Mizar</th>
