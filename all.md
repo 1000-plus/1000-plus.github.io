@@ -14,7 +14,7 @@ layout: plain
             <th>Name</th>
             <th class="dt-head-center">Isabelle</th>
             <th class="dt-head-center">HOL Light</th>
-            <th class="dt-head-center">Coq</th>
+            <th class="dt-head-center">Rocq</th>
             <th class="dt-head-center">Lean</th>
             <th class="dt-head-center">Metamath</th>
             <th class="dt-head-center">Mizar</th>
@@ -52,8 +52,8 @@ layout: plain
                     {% endif %}
                 </td>
                 <td class="dt-body-center">
-                    {% if t.coq %}
-                        {% for f in t.coq %}
+                    {% if t.rocq %}
+                        {% for f in t.rocq %}
                             <a href="{{ f.url }}" title="{{ f.authors | join: ', ' }}">{{ f.library }}</a>
                         {% endfor %}
                     {% endif %}
