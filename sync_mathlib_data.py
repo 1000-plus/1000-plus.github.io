@@ -363,7 +363,7 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             new_entry["comment"] = entry["comment"]
         authors = entry.get("authors")
         if authors:
-            authors = authors.split(" and ")
+            authors = authors.replace(", and ", ", ").replace(" and ", ", ").split(", ")
         if status:
             new_entry_typed = FormalisationEntry(
                 status, library, entry.get("url"), authors, new_entry.get('identifiers'), new_entry.get("date"), new_entry.get("comment")
