@@ -16,20 +16,29 @@
 <link rel="stylesheet" href="//cdn.datatables.net/buttons/3.1.1/css/buttons.dataTables.min.css">
 <script src="//cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.min.js"></script>
 
-
 <script>
     $(document).ready(function () {
+        // Extract the 'length' parameter from the URL query string, if present.
+        const urlParams = new URLSearchParams(window.location.search);
+        const lengthParam = urlParams.get('length');
+        const pageLength = lengthParam ? parseInt(lengthParam, 10) : null;
+
         let toolbar = document.createElement('div');
         toolbar.innerHTML = '<b>Custom tool bar! Text/images etc.</b>';
         let tables = $('table.datatable');
-        for (t of tables) {
-            dt = new DataTable(t, {
+        for (let t of tables) {
+            let options = {
                 "order": $(t).data('order-columns').map(n => [n, 'asc']),
                 lengthMenu: [
                     [100, 500, -1],
                     [100, 500, 'All']
                 ],
-            });
+            };
+            // If a valid pageLength was provided via GET, use it.
+            if (pageLength) {
+                options.pageLength = pageLength;
+            }
+            let dt = new DataTable(t, options);
             dt.columns().every(function () {
                 if ($(this.header()).data('hide-column')) {
                     this.visible(false);
