@@ -21,11 +21,14 @@ to update the contents of this repository from the file input_file.yaml.
 """
 
 
+import argparse
 import os
+import sys
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List, NamedTuple, Optional
 from datetime import datetime
+from pathlib import Path
 import yaml
 
 class ProofAssistant(Enum):
@@ -226,8 +229,31 @@ def _parse_title_inner(wiki_links: List[str]) -> str:
         title = displayed if prefer_display else wikipedia_lemma
     return title
 
+
 def _parse_title(entry: TheoremEntry) -> str:
     return _parse_title_inner(entry.wikipedia_links)
+
+
+def dump_yaml(obj: object) -> str:
+    class Dumper(yaml.Dumper):
+        # Indent list items
+        # https://github.com/yaml/pyyaml/issues/234
+        def increase_indent(self, flow=False, *args, **kwargs):
+            return super().increase_indent(flow=flow, indentless=False)
+
+        # Use double-quotes to avoid having to escape single-quotes in Wikipedia titles
+        # https://github.com/yaml/pyyaml/issues/575
+        def choose_scalar_style(self) -> str:
+            style = super().choose_scalar_style()
+            return '"' if style == "'" else style
+
+    return yaml.dump(
+        obj,
+        Dumper=Dumper,
+        width=float('inf'),
+        allow_unicode=True,
+        sort_keys=False,
+    )
 
 
 # Write a theorem entry for a downstream file.
@@ -292,11 +318,39 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
             inner['date'] = first.date
         if first.comment:
             inner['comment'] = first.comment
-    return yaml.dump({key: inner}, sort_keys=False, allow_unicode=True)
+    return dump_yaml({key: inner})
 
 
-'''Directory in this repository where all data about theorems is stored.'''
-THMS_DIR = '_thm'
+THIS_DIR = Path(__file__).parent
+# Directory in this repository where all data about theorems is stored.
+THMS_DIR = THIS_DIR / '_thm'
+
+
+# Format this repository's theorem data files
+def format_theorem_data() -> None:
+    count = 0
+    for filepath in THMS_DIR.iterdir():
+        if not filepath.is_file():
+            print(f"warning: `{filepath}` is not a file")
+            continue
+        if filepath.suffix != ".md":
+            print(f"warning: `{filepath}` is not a markdown file")
+            continue
+        file_contents = filepath.read_text()
+
+        # Preserve the title
+        title, _, _ = file_contents.strip().removeprefix("---\n# ").partition("\n")
+        # Format the YAML
+        # NOTE: this removes any comments in the file: https://github.com/yaml/pyyaml/issues/90
+        entry = yaml.safe_load(file_contents.strip().removesuffix("---"))
+        formatted_yaml = dump_yaml(entry)
+        # Save
+        filepath.write_text(f"---\n# {title}\n\n{formatted_yaml}---\n")
+
+        count += 1
+
+    print(f"Formatted {count} data files.")
+
 
 # Generate a file 1000.yaml from this repository's _thm folder.
 def generate_downstream_file() -> None:
@@ -445,32 +499,34 @@ def update_data_from_downstream_yaml(input_file: str) -> None:
             # Human-readable theorem title from the upstream file.
             # We're not preserving (for now) if this was a section or sub-section.
 
-            # XXX: the generated formatting is not exactly the same, because yaml.dump...
-            # `ruamel` seems to be better here... for now, we decide to not care
             title = _parse_title_inner(upstream_data["wikipedia_links"])
-            with open(upstream_file, 'w') as f:
-                yamls = yaml.dump(upstream_data, allow_unicode=True, indent=2, sort_keys=False)
-                f.write(f"---\n# {title}\n\n{yamls}\n---")
+            yamls = dump_yaml(upstream_data)
+            Path(upstream_file).write_text(f"---\n# {title}\n\n{yamls}---\n")
 
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    parser_format = subparsers.add_parser("format", help="Auto-format the yaml files in this repo")
+
+    parser_downstream = subparsers.add_parser("downstream", help="Generate a `1000.yaml` file from the data in this repo")
+
+    parser_upstream = subparsers.add_parser("upstream", help="Update the data in this repo using a `1000.yaml` file")
+    parser_upstream.add_argument("input_filepath", metavar="<filename.yaml>")
+
+    if len(sys.argv) <= 1:
+        parser.print_help()
+        return
+    args = parser.parse_args()
+
+    match args.command:
+        case "format":
+            format_theorem_data()
+        case "downstream":
+            generate_downstream_file()
+        case "upstream":
+            update_data_from_downstream_yaml(input_file=args.input_filepath)
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        print("Please specify what you want to do: pass the --downstream option to regenerate a file 1000.yaml or "
-            "pass --upstream <filename.yaml> to update the theorem data files in this repository "
-            "from a downstream .yaml file.", file=sys.stderr)
-        sys.exit(1)
-    match sys.argv[1]:
-        case "--downstream":
-            generate_downstream_file()
-        case "--upstream":
-            if len(sys.argv) == 2:
-                print("error: please specify the input file to read from: "
-                    "usage: python3 sync_mathlib_data.py --upstream <filename.yaml>", file=sys.stderr)
-                sys.exit(1)
-            update_data_from_downstream_yaml(sys.argv[2])
-        case unexpected:
-            print(f"Unexpected argument '{unexpected}': usage is\n  python3 sync_mathlib_data.py --downstream\n"
-            "to regenerate a downstream file 1000.yaml or\n  python3 sync_mathlib_data.py --upstream <inputfile.yaml>\n"
-            "to update the theorem data files in this repository from a downstream .yaml file.", file=sys.stderr)
-            sys.exit(1)
+    main()
