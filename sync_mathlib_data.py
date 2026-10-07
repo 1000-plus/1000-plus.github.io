@@ -264,7 +264,8 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
             if first.identifiers:
                 match first.status:
                     case FormalizationStatus.Statement:
-                        inner["statement"] = first.identifiers
+                        assert len(first.identifiers) == 1
+                        inner["statement"] = first.identifiers[0]
                     case FormalizationStatus.FullProof:
                         if len(first.identifiers) == 1:
                             inner["decl"] = first.identifiers[0]
