@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List, NamedTuple, Optional
 from datetime import datetime
+from pathlib import Path
 import yaml
 
 class ProofAssistant(Enum):
@@ -295,32 +296,31 @@ def _write_entry_for_downstream(entry: TheoremEntry) -> str:
     return yaml.dump({key: inner}, sort_keys=False, allow_unicode=True)
 
 
-'''Directory in this repository where all data about theorems is stored.'''
-THMS_DIR = '_thm'
+THIS_DIR = Path(__file__).parent
+# Directory in this repository where all data about theorems is stored.
+THMS_DIR = THIS_DIR / '_thm'
+OUTPUT_FILEPATH = Path("generated-1000.yaml")
 
-# Generate a file 1000.yaml from this repository's _thm folder.
+# Generate a file `1000.yaml` from this repository's `_thm` folder.
 def generate_downstream_file() -> None:
     # Determine the list of theorem entry files.
-    theorem_entry_files = []
-    with os.scandir(THMS_DIR) as entries:
-        theorem_entry_files = [entry.name for entry in entries if entry.is_file()]
     # Parse each entry file into a theorem entry.
     theorems: List[TheoremEntry] = []
-    for file in theorem_entry_files:
-        with open(os.path.join(THMS_DIR, file), "r") as f:
+    for filepath in THMS_DIR.iterdir():
+        with filepath.open() as f:
             entry = _parse_theorem_entry(f.readlines())
             if entry is None:
-                print(f"warning: file {os.path.join(THMS_DIR, file)} contains invalid input, ignoring", file=sys.stderr)
+                print(f"warning: file `{filepath}` contains invalid input, ignoring", file=sys.stderr)
                 continue
-            lean = entry.formalisations[ProofAssistant.Lean]
             theorems.append(entry)
     # Sort alphabetically according to wikidata ID
-    # (more precisely, according to the number of the ID: Q42 comes before Q100).
+    # (more precisely, according to the number of the ID: `Q42` comes before `Q100`;
+    # `Q42` comes before `Q42A` which comes before `Q42B`).
     # FUTURE: also use MSC classification?
     # Write out a new yaml file for this, again.
-    with open("generated-1000.yaml", "w") as f:
-        sorted_thms = sorted(theorems, key=lambda t: int(t.wikidata[1:]))
-        f.write("\n".join([_write_entry_for_downstream(thm) for thm in sorted_thms]))
+    sorted_thms = sorted(theorems, key=lambda t: (int(t.wikidata[1:]), t.id_suffix or ''))
+    file_contents = "\n".join(_write_entry_for_downstream(thm) for thm in sorted_thms)
+    OUTPUT_FILEPATH.write_text(file_contents)
 
 # Update this repository's data about Lean formalisations with the contents
 # in a yaml file |input_file|.
